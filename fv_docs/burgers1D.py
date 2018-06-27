@@ -12,65 +12,60 @@ Numerical scheme:
 """
 
 import numpy as np
-import sympy
 import matplotlib.pyplot as plt
+import maths_utils as mth
+
+import fluxes1Dinv as f1i
+import fluxes1Dvis as f1v
 
 # set up initial and analytical solution
-x, nu, t = sympy.symbols('x nu t')
-phi = (sympy.exp(-(x - 4*t)**2 / (4*nu*(t+1))) + \
-       sympy.exp(-(x - 4*t - 2*np.pi)**2 / (4*nu*(t+1))))
-
-phiprime = phi.diff(x)
-
-u = -2*nu*(phiprime / phi) + 4
-ufunc = sympy.utilities.lambdify((t, x, nu), u)
+ufunc = mth.BurgersWave1D()
 
 #set up problem
-nx = 101
-nt = 10
+nx = 151
+nt = 200
 L  = 2.*np.pi
 dx = L/(nx-1)
-nu = .50
-dt = 0.001
+nu = .17
+dt = 0.0001
 
-x = np.linspace(0, L, nx)
+x = np.linspace(dx/2.0, L - dx/2.0, nx)
 un = np.empty(nx)
 t = 0
 
 #set initial solution
 u_0 = np.asarray([ufunc(t, x0, nu) for x0 in x])
-u_0[-1] = u_0[0]
 u = u_0.copy()
+
+print('cfl  =', max(u_0)*dt/dx)
+print('dif# =', nu*dt/(dx*dx))
+print('Pe   =', max(u_0)*dx/nu)
+
+#set flux calculation methods
+nflux_inv = f1i.UDS1
+nflux_vis = f1v.CDS4
 
 flux_inv = np.empty(nx-1)
 flux_vis = np.empty(nx-1)
 flux     = np.empty(nx-1)
+
 
 # timestepping
 for n in range(nt):
     un = u.copy()
 
     # calculate inviscid and viscous fluxes across each face
-    flux_inv =    (un[1:] + un[:-1])*(un[1:] + un[:-1])/4.0
-    flux_vis = nu*(un[1:] - un[:-1])/dx
+    flux_inv = nflux_inv(u, u)
+    flux_vis = nflux_vis(u, dx, nu)
 
     flux = (flux_inv + flux_vis)
 
     # update cell values
-    u[:-1] = un[:-1] - flux*dt/dx
-    u[1:]  = u[1:]   + flux*dt/dx
-
-    # periodic boundary conditions
-    u[0] = u[0] + u[-1] - un[0]
-    u[-1] = u[0]
+    u = un + flux[:-1]*dt/dx
+    u = u - flux[1:]*dt/dx
 
 u_exact = np.asarray([ufunc(nt*dt, xi, nu) for xi in x])
 
-fig1, ax1 = plt.subplots(1, 1)
-ax1.plot(x, u_0, label='initial')
-ax1.plot(x, u_exact, label='exact')
-ax1.plot(x, u, label='numerical')
-ax1.set_xlabel(r'$x$')
-ax1.set_ylabel(r'$u$')
-ax1.legend()
+fig1, ax1 = mth.plot1Dsolution(x, un, u_0=u_0, u_e=u_exact)
 fig1.show()
+

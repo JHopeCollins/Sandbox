@@ -19,7 +19,14 @@ def CDS2(var, dx, nu):
     Estimates diffusive flux at cell face from linear interpolation of neighbouring cell values
     """
 
-    flux = nu*(u[1:] - u[:-1)/dx
+    flux = np.empty(len(var)+1)
+    flux[1:-1] = (var[1:] - var[:-1])
+
+    #periodic boundary conditions
+    flux[ 0] = (var[0] - var[-1])
+    flux[-1] = flux[0]
+
+    flux = nu*flux/dx
 
     return flux
 
@@ -35,8 +42,17 @@ def CDS4(var, dx, nu):
     Estimates diffusive flux at cell face from linear interpolation of neighbouring cell values
     """
 
-    indxs = np.asarray(u[1:-2]
-    flux = (u[indxs-1] - 27*u[indxs] + 27*u[indxs+1] - u[indxs+2])/24.0
+    flux = np.empty(len(var)+1)
+
+    flux[2:-2] = (var[:-3] - 27.0*var[1:-2] + 27.0*var[2:-1] - var[3:]) / 24.0
+
+    # periodic boundary conditions
+    flux[-2] = (var[-3] - 27.0*var[-2] + 27.0*var[-1] - var[0]) / 24.0
+    flux[ 0] = (var[-2] - 27.0*var[-1] + 27.0*var[ 0] - var[1]) / 24.0
+    flux[ 1] = (var[-1] - 27.0*var[ 0] + 27.0*var[ 1] - var[2]) / 24.0
+
+    flux[-1] = flux[0]
+
     flux = nu*flux/dx
 
     return flux
