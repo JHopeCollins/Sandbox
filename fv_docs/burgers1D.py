@@ -19,7 +19,7 @@ ufunc = mth.BurgersWave1D()
 
 #set up problem
 nx = 101
-nt = 200
+nt = 300
 L  = 2.*np.pi
 dx = L/(nx-1)
 nu = .17
@@ -39,10 +39,10 @@ print('Pe   =', max(u_0)*dx/nu)
 
 #--------------------------------------------------
 
-fluxv = fluxclass.vCDS2()
+fluxv = fluxclass.vCDS4()
 fluxv.set_boundary_condition('periodic')
 
-fluxi = fluxclass.iQUICK3()
+fluxi = fluxclass.iUDS1()
 fluxi.set_boundary_condition('periodic')
 
 #--------------------------------------------------
