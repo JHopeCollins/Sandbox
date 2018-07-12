@@ -172,3 +172,65 @@ def plot1Dsolution(x, u_n, u_0='none', u_e='none'):
 
     return fig1, ax1
 
+
+def cell_face_direction(u):
+    """
+    cell_face_direction(u)
+    args:
+    u: array len=n of +ve/-ve numbers
+    return:
+    direction: array of len=n-1
+    Values of direction array are +1 or -1 indicating the 'direction' (sign) of the average of consecutive values in u
+    """
+
+    u = (u[:-1] + u[1:])
+    direction = np.sign(u)
+    direction = direction.astype(int)
+
+    return direction
+
+
+def upwind_idx(indxs, direction):
+    """
+    upwind_idx(indx, direction)
+    args:
+    indx: indexes of cells
+    direction: sign of velocity at cell faces
+    return:
+    upwind: array of indexes of upwind cell for each face
+    """
+
+    upwind = indxs - (direction - 1)/2
+
+    return upwind
+
+
+def upupwind_idx(indxs, direction):
+    """
+    upwind_idx(indx, direction)
+    args:
+    indx: indexes of cells
+    direction: sign of velocity at cell faces
+    return:
+    upupwind: array of indexes of upupwind cell for each face
+    """
+
+    upupwind = indxs - ((direction - 1)/2)*3 - 1
+
+    return upupwind
+
+
+def downwind_idx(indxs, direction):
+    """
+    upwind_idx(indx, direction)
+    args:
+    indx: indexes of cells
+    direction: sign of velocity at cell faces
+    return:
+    downwind: array of indexes of downwind cell for each face
+    """
+
+    downwind = indxs - (direction + 1)/2
+
+    return downwind
+
