@@ -26,6 +26,65 @@ class Flux(object):
     For guidance in writing these methods for specific flux types, please see the templates included in this class, and previously implemented flux types.
     """
 
+    def __init__(self):
+        self.variable_name = None
+        self.other_variable_names = []
+        self.parameter_names = []
+        self.bconds = []
+        self.stencil_radius = None
+
+    def set_variable(self, variable_name):
+        """
+        Set the variable the flux is transporting
+
+        input arguments:
+        variable_name: string containing variable name. MUST BE KEY FOR VARIABLE DICTIONARY
+        """
+        self.variable_name = variable_name
+        return
+
+    def set_other_variables(self, other_variable_names):
+        """
+        Set the other variables required to calculate the flux
+
+        input arguments:
+        other_variable_name: list of strings containing other variable names. MUST BE KEYS FOR VARIABLE DICTIONARY
+        """
+        self.other_variable_names = other_variable_names
+        return
+
+    def set_parameters(self, parameter_names):
+        """
+        Set the parameters required to calculate the flux
+
+        input arguments:
+        parameter_names: list of strings containing parameter names. MUST BE KEYS FOR PARAMETER DICTIONARY KEYS
+        """
+        self.parameter_names = parameter_names
+        return
+
+    def construct_arg_lists(self, var_dict, par_dict):
+        """
+        Create a list of variables, and a list of parameters required by the flux
+
+        input arguments:
+        var_dict: dictionary containing all flow variables, with keys as their names
+        par_dict: dictionary containing all flow parameters, with keys as their names
+
+        output:
+        var_list: list of flow variables required by the flux, in the order expected
+        par_list: list of flow parameters required by the flux, in the order expected
+        """
+        var = var_dict[self.variable_name]
+        other_var_list = []
+        par_list = []
+        for name in self.other_variable_names:
+            other_var_list.append(var_dict[name])
+        for name in self.parameter_names:
+            par_list.append(par_dict[name])
+
+        return var, other_var_list, par_list
+
     def set_boundary_condition(self, bc_type, bc_index='none'):
         """
         Add a boundary condition of the given type and location to the flux
@@ -63,44 +122,45 @@ class Flux(object):
 
         return
 
-    def apply(self, arglist):
+    def apply(self, var_dict, par_dict):
         """
         Construct array of fluxes for all cell faces (including boundary faces)
 
         input arguments:
-        arglist: list of arguments, specific to flux type. Requirements for each flux type are listed in the docstring for that fluxes flux_calculation method
+        var_dict: dictionary containing all flow variables, with their names as keys
+        par_dict: dictionary containing all parameters, with their names as keys
 
         returns:
         flux: array of fluxes at cell faces. len(flux) = len(var)+1
         """
-        flux = np.empty(len(arglist[0])+1)
+        flux = np.empty(par_dict['nx']+1)
+
+        var, other_var_list, par_list = self.construct_arg_lists(var_dict, par_dict)
 
         # flux in central part of domain
         bound = self.stencil_radius
-        flux[bound:-bound] = self.flux_calculation(arglist)
+        flux[bound:-bound] = self.flux_calculation(var, other_var_list, par_list)
 
         # flux at boundaries
-        for bc in self.bconds:
-            bc_type = bc[0]
-            bc_indx = bc[1]
+        for bc_type, bc_indx in self.bconds:
             # fetch function for boundary condition
             boundary_condition = getattr(self, bc_type)
-            fi_list = boundary_condition(bc_indx, arglist)
+            fi_list = boundary_condition(bc_indx, var, other_var_list, par_list)
             # include boundary fluxes into global flux array
-            for f_i in fi_list:
-                f = f_i[0]
-                i = f_i[1]
+            for f, i in fi_list:
                 flux[i] = f
 
         return flux
 
-    def periodic(self, bc_indx, arglist):
+    def periodic(self, bc_indx, var, other_var_list, par_list):
         """
         Apply periodic boundary conditions.
 
         input arguments:
         bc_indx: index of boundary to apply condition to ('none' for periodic)
-        arglist: same arglist as is given to 'apply' method (see apply.__doc__ for description)
+        var: array of the variable being transported by the flux
+        other_var_list: list of arrays of other flow variables needed for the flux calculation
+        par_list: list of parameters needed for the flux calculation
 
         returns:
         fi_list: list of tuples. Each tuple contains a flux value (position 0 in tuple) and the index of the global flux array the value corresponds to (position 1 in tuple)
@@ -111,36 +171,46 @@ class Flux(object):
         # how many cells either side of periodic plane are required to calculate fluxes at these faces
         bound = 2*self.stencil_radius - 1
 
-        # temporary arglist containing arrays of flow variables which span periodic plane, and any other variables from original arglist (eg dx, nu)
-        arglist_temp = []
-        for arg in arglist:
-            if (type(arg) == np.ndarray):
-                arg_temp = np.append(arg[-bound:], arg[:bound])
-                arglist_temp.append(arg_temp)
-            else:
-                arglist_temp.append(arg)
+        # temporary arglists containing arrays of flow variables which span periodic plane, and any other variables from original arglist (eg dx, nu)
+        other_var_list_temp = []
+        par_list_temp = []
 
-        del arglist
+        var_temp = np.append(var[-bound:], var[:bound])
+
+        for other_var in other_var_list:
+            if (type(other_var) == np.ndarray):
+                other_var_temp = np.append(other_var[-bound:], other_var[:bound])
+                other_var_list_temp.append(other_var_temp)
+            else:
+                other_var_list_temp.append(other_var)
+
+        for par in par_list:
+            if (type(par) == np.ndarray):
+                par_temp = np.append(par[-bound:], par[:bound])
+                par_list_temp.append(par_temp)
+            else:
+                par_list_temp.append(par)
 
         # calculate fluxes across periodic plane consistently with rest of domain
-        flux_temp = self.flux_calculation(arglist_temp)
+        flux_temp = self.flux_calculation(var_temp, other_var_list_temp, par_list_temp)
 
         fi_list = []
 
         # place flux values into list with relevant global cell face index
-        fti = 0
+        # ti: temp flux index; i: global flux index
+        ti = 0
         # fluxes at 'end' of domain
-        for fi in range(-self.stencil_radius, -1):
-            fi_list.append( (flux_temp[fti], fi) )
-            fti += 1
+        for i in range(-self.stencil_radius, -1):
+            fi_list.append( (flux_temp[ti], i) )
+            ti += 1
         # shared cell face at periodic plane
-        fi_list.append( (flux_temp[fti], -1) )
-        fi_list.append( (flux_temp[fti],  0) )
-        fti += 1
+        fi_list.append( (flux_temp[ti], -1) )
+        fi_list.append( (flux_temp[ti],  0) )
+        ti += 1
         # fluxes at 'beginning' of domain
-        for fi in range(1, self.stencil_radius):
-            fi_list.append( (flux_temp[fti], fi) )
-            fti += 1
+        for i in range(1, self.stencil_radius):
+            fi_list.append( (flux_temp[ti], i) )
+            ti += 1
 
         return fi_list
 
@@ -159,11 +229,11 @@ class vCDS2(Flux):
             an empty list for boundary conditions
             the radius of the stencil around the cell face
         """
-        self.bconds = []
+        super(self.__class__, self).__init__()
         self.stencil_radius = 1
         return
 
-    def flux_calculation(self, arglist):
+    def flux_calculation(self, var, other_var_list, par_list):
         """
         Calculate the flux in the centre of the domain (cell faces where stencil does not overlap with boundary)
 
@@ -176,10 +246,8 @@ class vCDS2(Flux):
         returns:
         flux: array of diffusive fluxes at the cell faces in the centre of the domain. len(flux)=len(var)-1
         """
-        var = arglist[0]
-        dx  = arglist[1]
-        nu  = arglist[2]
-        del arglist
+        dx  = par_list[0]
+        nu  = par_list[1]
 
         flux = var[1:] - var[:-1]
         flux = -nu*flux/dx
@@ -201,11 +269,11 @@ class vCDS4(Flux):
             an empty list for boundary conditions
             the radius of the stencil around the cell face
         """
-        self.bconds = []
+        super(self.__class__, self).__init__()
         self.stencil_radius = 2
         return
 
-    def flux_calculation(self, arglist):
+    def flux_calculation(self, var, other_var_list, par_list):
         """
         Calculate the flux in the centre of the domain (cell faces where stencil does not overlap with boundary)
 
@@ -218,10 +286,8 @@ class vCDS4(Flux):
         returns:
         flux: array of diffusive fluxes at the cell faces in the centre of the domain. len(flux)=len(var)-3
         """
-        var = arglist[0]
-        dx  = arglist[1]
-        nu  = arglist[2]
-        del arglist
+        dx  = par_list[0]
+        nu  = par_list[1]
 
         flux = (var[:-3] - 27.0*var[1:-2] + 27.0*var[2:-1] - var[3:]) / 24.0
         flux = -nu*flux/dx
@@ -243,11 +309,11 @@ class iCDS2(Flux):
             an empty list for boundary conditions
             the radius of the stencil around the cell face
         """
-        self.bconds = []
+        super(self.__class__, self).__init__()
         self.stencil_radius = 1
         return
 
-    def flux_calculation(self, arglist):
+    def flux_calculation(self, var, other_var_list, par_list):
         """
         Calculate the flux in the centre of the domain (cell faces where stencil does not overlap with boundary)
 
@@ -259,9 +325,7 @@ class iCDS2(Flux):
         returns:
         flux: array of diffusive fluxes at the cell faces in the centre of the domain. len(flux)=len(var)-1
         """
-        u   = arglist[0]
-        var = arglist[1]
-        del arglist
+        u = other_var_list[0]
 
         u_cellface   = (u[  :-1] + u[  1:])
         var_cellface = (var[:-1] + var[1:])
@@ -285,11 +349,11 @@ class iCDS2_2(Flux):
             an empty list for boundary conditions
             the radius of the stencil around the cell face
         """
-        self.bconds = []
+        super(self.__class__, self).__init__()
         self.stencil_radius = 1
         return
 
-    def flux_calculation(self, arglist):
+    def flux_calculation(self, var, other_var_list, par_list):
         """
         Calculate the flux in the centre of the domain (cell faces where stencil does not overlap with boundary)
 
@@ -301,9 +365,7 @@ class iCDS2_2(Flux):
         returns:
         flux: array of diffusive fluxes at the cell faces in the centre of the domain. len(flux)=len(var)-1
         """
-        u   = arglist[0]
-        var = arglist[1]
-        del arglist
+        u = other_var_list[0]
 
         f1 = u[:-1]*var[:-1]
         f2 = u[1: ]*var[1: ]
@@ -327,11 +389,11 @@ class iUDS1(Flux):
             an empty list for boundary conditions
             the radius of the stencil around the cell face
         """
-        self.bconds = []
+        super(self.__class__, self).__init__()
         self.stencil_radius = 1
         return
 
-    def flux_calculation(self, arglist):
+    def flux_calculation(self, var, other_var_list, par_list):
         """
         Calculate the flux in the centre of the domain (cell faces where stencil does not overlap with boundary)
 
@@ -343,9 +405,7 @@ class iUDS1(Flux):
         returns:
         flux: array of diffusive fluxes at the cell faces in the centre of the domain. len(flux)=len(var)-1
         """
-        u   = arglist[0]
-        var = arglist[1]
-        del arglist
+        u = other_var_list[0]
 
         # velocity direction on cell face for upwinding
         direction = mth.cell_face_direction(u)
@@ -379,11 +439,11 @@ class iQUICK3(Flux):
             an empty list for boundary conditions
             the radius of the stencil around the cell face
         """
-        self.bconds = []
+        super(self.__class__, self).__init__()
         self.stencil_radius = 2
         return
 
-    def flux_calculation(self, arglist):
+    def flux_calculation(self, var, other_var_list, par_list):
         """
         Calculate the flux in the centre of the domain (cell faces where stencil does not overlap with boundary)
 
@@ -395,9 +455,7 @@ class iQUICK3(Flux):
         returns:
         flux: array of diffusive fluxes at the cell faces in the centre of the domain. len(flux)=len(var)-3
         """
-        u   = arglist[0]
-        var = arglist[1]
-        del arglist
+        u   = other_var_list[0]
 
         # velocity direction on cell face for upwinding
         direction = mth.cell_face_direction(u[1:-1])

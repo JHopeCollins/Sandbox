@@ -183,8 +183,7 @@ def cell_face_direction(u):
     Values of direction array are +1 or -1 indicating the 'direction' (sign) of the average of consecutive values in u
     """
 
-    u = (u[:-1] + u[1:])
-    direction = np.sign(u)
+    direction = np.sign(u[:-1] + u[1:])
     direction = direction.astype(int)
 
     return direction
