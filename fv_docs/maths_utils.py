@@ -108,8 +108,8 @@ class SquareWave1D(object):
         if te < le:
             u[te_idx:le_idx] = self.umax
         elif te > le:
-            u[:le_idx] = self.umax
-            u[te_idx:] = self.umax
+            u[:le_idx ] = self.umax
+            u[ te_idx:] = self.umax
 
         return u
 
@@ -136,12 +136,14 @@ def BurgersWave1D():
     nu > 0
     """
     x, nu, t = sympy.symbols('x nu t')
+
     phi = (sympy.exp(-(x - 4*t)**2 / (4*nu*(t+1))) + \
            sympy.exp(-(x - 4*t - 2*np.pi)**2 / (4*nu*(t+1))))
 
     phiprime = phi.diff(x)
 
     u = -2*nu*(phiprime / phi) + 4
+
     ufunc = sympy.utilities.lambdify((t, x, nu), u)
 
     return ufunc
@@ -187,6 +189,24 @@ def cell_face_direction(u):
     direction = direction.astype(int)
 
     return direction
+
+
+def step_into_array( boundary, nsteps ):
+    """
+    Return index of element nsteps in from array boundary
+
+    input arguments:
+    boundary: integer either (0, -1) for start or end of array
+    nsteps: how far from array end to step
+
+    return:
+    indx: (0+nsteps) or (-1-nsteps)
+    """
+
+    direction = boundary*2 + 1
+    indx = boundary + nsteps*direction
+
+    return indx
 
 
 def upwind_idx(indxs, direction):
