@@ -177,17 +177,15 @@ def plot1Dsolution(x, u_n, u_0='none', u_e='none'):
 
 def cell_face_direction(u):
     """
-    cell_face_direction(u)
-    args:
-    u: array len=n of +ve/-ve numbers
-    return:
-    direction: array of len=n-1
-    Values of direction array are +1 or -1 indicating the 'direction' (sign) of the average of consecutive values in u
+        cell_face_direction(u)
+        args:
+        u: array len=n of +ve/-ve numbers
+        return:
+        direction: array of len=n-1
+        Values of direction array are +1 or -1 indicating the 'direction' (sign) of the average of consecutive values in u
     """
-
     direction = np.sign(u[:-1] + u[1:])
     direction = direction.astype(int)
-
     return direction
 
 
@@ -209,47 +207,65 @@ def step_into_array( boundary, nsteps ):
     return indx
 
 
-def upwind_idx(indxs, direction):
-    """
-    upwind_idx(indx, direction)
-    args:
-    indx: indexes of cells
-    direction: sign of velocity at cell faces
-    return:
-    upwind: array of indexes of upwind cell for each face
-    """
+def upwind_idx( indxs, direction, n ):
+    upwind = indxs - n*direction + (direction+1)/2
+    return upwind
 
+
+def downwind_idx( indxs, direction, n ):
+    downwind = indxs + n*direction - (direction-1)/2
+    return downwind
+
+
+def upwind_idx_obsolete(indxs, direction):
     upwind = indxs - (direction - 1)/2
-
     return upwind
 
 
 def upupwind_idx(indxs, direction):
-    """
-    upwind_idx(indx, direction)
-    args:
-    indx: indexes of cells
-    direction: sign of velocity at cell faces
-    return:
-    upupwind: array of indexes of upupwind cell for each face
-    """
-
     upupwind = indxs - ((direction - 1)/2)*3 - 1
-
     return upupwind
 
 
-def downwind_idx(indxs, direction):
-    """
-    upwind_idx(indx, direction)
-    args:
-    indx: indexes of cells
-    direction: sign of velocity at cell faces
-    return:
-    downwind: array of indexes of downwind cell for each face
-    """
-
+def downwind_idx_obsolete(indxs, direction):
     downwind = indxs - (direction + 1)/2
-
     return downwind
+
+
+def periodify_sym_patch( array, n ):
+    """
+    Return array length 2n with last n and first n elements of original array
+    """
+    return np.append( array[-n:], array[:n] )
+
+def periodify_asym_patch( array, ln, rn ):
+    """
+    Return array length ln+rn with last ln and first rn elements of original array
+    """
+    return np.append( array[-ln:], array[:rn] )
+
+def periodify_change_origin( array, origin ):
+    """
+    Return array rotated periodically until element origin at 0
+    """
+    ln = len( array ) - origin
+    rn = origin
+    return self.asym_patch( array, ln, rn )
+
+def periodify_sym_patch_origin( array, n, origin ):
+    """
+    Return array length 2n with n elements of array from either side of origin from original array
+    """
+    parray = self.change_origin( array, origin )
+    parray = self.sym_patch(     array, n      )
+    return parray
+
+def periodify_asym_patch_origin( array, ln, rn, origin ):
+    """
+    Return array length ln+rn with ln elements from after and rn elements from before origin from original array
+    """
+    parray = self.change_origin( array, origin )
+    parray = self.asym_patch(    array, ln, rn )
+
+    return parray
 
