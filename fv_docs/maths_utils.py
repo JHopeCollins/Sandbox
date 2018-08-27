@@ -149,7 +149,7 @@ def BurgersWave1D():
     return ufunc
 
 
-def plot1Dsolution(x, u_n, u_0='none', u_e='none'):
+def plot1Dsolution(x, u_n, u_0=None, u_e=None):
     """
     plot1Dsolutions(x, u_n, u_0='none', u_a='none')
     x: array of x axis points
@@ -163,9 +163,9 @@ def plot1Dsolution(x, u_n, u_0='none', u_e='none'):
     fig1, ax1 = plt.subplots(1, 1)
 
     ax1.plot(x, u_n, label='numerical')
-    if (u_0 != 'none'):
+    if (u_0 != None):
         ax1.plot(x, u_0, label='initial')
-    if (u_e != 'none'):
+    if (u_e != None):
         ax1.plot(x, u_e, label='exact')
 
     ax1.set_xlabel(r'$x$')

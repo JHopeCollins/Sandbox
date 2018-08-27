@@ -23,6 +23,9 @@ class Domain ( object ):
     def set_x( self, x ):
         self.x  = x
         self.dx = np.diff( x )
+
+        self.x_noghost  = self.x[ 1:-1]
+        self.dx_noghost = self.dx[1:-1]
         return
 
 
@@ -59,17 +62,19 @@ class Field1D( object ):
         self.name   = name
         self.mesh   = mesh
         self.val    = np.zeros_like(self.mesh.x)
+        self.val_noghost = self.val[1:-1]
         self.bconds = []
 
         return
 
     def set_field( self, data ):
-        self.val[1:-1] = data[:]
-        self.update_ghosts
+        self.val_noghost[:] = data[:]
+        self.update_ghosts()
         return
 
     def update( self, update ):
         self.val[:] += update[:]
+        self.update_ghosts()
         return
 
     def set_boundary_condition( self, name=None, indx=None, val=None ):

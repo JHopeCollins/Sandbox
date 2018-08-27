@@ -102,15 +102,15 @@ class Flux1D( object ):
         # ti: temp flux index; i: global flux index
         ti = 0
 
-        for i in range( -self.stencil_radius, -1 ):
+        for i in range( -self.stencil_radius-1, -2 ):
             fi_list.append( (flux_temp[ti], i) )
             ti += 1
 
-        fi_list.append( (flux_temp[ti], -1) )
-        fi_list.append( (flux_temp[ti],  0) )
+        fi_list.append( (flux_temp[ti], -2) )
+        fi_list.append( (flux_temp[ti],  1) )
         ti += 1
 
-        for i in range( 1, self.stencil_radius ):
+        for i in range( 2, self.stencil_radius+1 ):
             fi_list.append( (flux_temp[ti], i) )
             ti += 1
 
