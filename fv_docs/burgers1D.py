@@ -19,7 +19,7 @@ ufunc = mth.BurgersWave1D()
 
 #set up problem
 nx = 201+2
-nt = 100
+nt = 50
 L  = 2.*np.pi
 dx = L/(nx-1)
 nu = 0.17

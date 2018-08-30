@@ -18,9 +18,6 @@ class DiffusiveFlux1D( flc.Flux1D ):
     """
 
     def set_diffusion_coefficient( self, dcoeff ):
-        """
-            set the diffusion coefficient for the flux
-        """
         self.dcoeff = dcoeff
         return
 
@@ -52,9 +49,6 @@ class CDS2( DiffusiveFlux1D ):
     """
 
     def __init__( self ):
-        """
-            initialise flux instance with Flux class attributes and the radius of the stencil around the cell face
-        """
         super( self.__class__, self ).__init__()
         self.stencil_radius = 1
         return
@@ -98,9 +92,6 @@ class CDS4( DiffusiveFlux1D ):
     """
 
     def __init__( self ):
-        """
-            initialise flux instance with Flux class attributes and the radius of the stencil around the cell face
-        """
         super( self.__class__, self ).__init__()
         self.stencil_radius = 2
         return

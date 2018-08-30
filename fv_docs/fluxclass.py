@@ -27,9 +27,6 @@ class Flux1D( object ):
         For guidance in writing these methods for specific flux types, please see the templates included in this class, and previously implemented flux types.
     """
     def __init__( self ):
-        """
-            create Flux instance with variable name and stencil radius
-        """
         self.stencil_radius = None
         return
 
@@ -46,12 +43,12 @@ class Flux1D( object ):
 
     def apply( self ):
         """
-            Construct array of fluxes for all cell faces (including boundary faces)
+            Construct array of fluxes for all cell faces (excluding faces outside ghosts)
 
             returns:
             flux: array of fluxes at cell faces. len(flux) = len(var)+1
         """
-        flux = np.empty( len( self.var.val ) + 1 )
+        flux = np.zeros( len( self.var.val ) + 1 )
 
         args = self.construct_arg_list()
 
@@ -74,11 +71,8 @@ class Flux1D( object ):
             Apply periodic boundary conditions.
 
             input arguments:
-            bc_indx: index of boundary to apply condition to (None for periodic)
-            bc_val: value boundary condition set to (None for periodic)
-            var: array of the variable being transported by the flux
-            other_var_list: list of arrays of other flow variables needed for the flux calculation
-            par_list: list of parameters needed for the flux calculation
+            bc: BoundaryCondition instance
+            args: arguments for flux calculation
 
             returns:
             fi_list: list of tuples. Each tuple contains a flux value (position 0 in tuple) and the index of the global flux array the value corresponds to (position 1 in tuple)
@@ -91,6 +85,10 @@ class Flux1D( object ):
         for arg in args:
             if type( arg ) == np.ndarray:
                 args_temp.append( mth.periodify_sym_patch( arg[1:-1], bound ) )
+                if arg is self.mesh.dx:
+                    pdx = ( self.mesh.dx[0] + self.mesh.dx[-1] ) /2.0
+                    args_temp[-1] = args_temp[-1][1:-1]
+                    args_temp[-1] = np.insert( args_temp[-1], bound-1, pdx )
             else:
                 args_temp.append( arg )
 

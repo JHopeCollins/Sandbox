@@ -18,15 +18,12 @@ class AdvectiveFlux( flc.Flux1D ):
     """
 
     def set_advection_velocity( self, v ):
-        """
-        set advection velocity for the flux
-        """
         self.vel = v
         return
 
     def construct_arg_list( self ):
         """
-        return the argument list for flux_calculation method
+        return the argument list for flux_calculation() method
         """
         args = []
         args.append( self.var.val )
@@ -77,9 +74,6 @@ class CDS2( AdvectiveFlux ):
     """
 
     def __init__( self ):
-        """
-            initialise flux instance with Flux class attributes and the radius of the stencil around the cell face
-        """
         super( self.__class__, self ).__init__()
         self.stencil_radius = 1
         return
@@ -156,9 +150,6 @@ class CDS2_2( AdvectiveFlux ):
     """
 
     def __init__( self ):
-        """
-            initialise flux instance with Flux class attributes and the radius of the stencil around the cell face
-        """
         super( self.__class__, self ).__init__()
         self.stencil_radius = 1
         return
@@ -203,9 +194,6 @@ class UDS1( UpwindFlux ):
     """
 
     def __init__( self ):
-        """
-            initialise flux instance with Flux class attributes and the radius of the stencil around the cell face
-        """
         super( self.__class__, self ).__init__()
         self.stencil_radius = 1
         return
@@ -276,9 +264,6 @@ class QUICK3( UpwindFlux ):
     """
 
     def __init__( self ):
-        """
-            initialise flux instance with Flux class attributes and the radius of the stencil around the cell face
-        """
         super( self.__class__, self ).__init__()
         self.stencil_radius = 2
         return
