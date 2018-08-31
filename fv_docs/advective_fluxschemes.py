@@ -21,7 +21,7 @@ class AdvectiveFlux( flc.Flux1D ):
         self.vel = v
         return
 
-    def construct_arg_list( self ):
+    def arg_list( self ):
         """
         return the argument list for flux_calculation() method
         """

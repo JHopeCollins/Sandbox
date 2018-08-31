@@ -50,7 +50,7 @@ class Flux1D( object ):
         """
         flux = np.zeros( len( self.var.val ) - 1 )
 
-        args = self.construct_arg_list()
+        args = self.arg_list()
 
         bound = self.stencil_radius
 
@@ -111,7 +111,7 @@ class Flux1D( object ):
 
         return
 
-    def construct_arg_list( self ):
+    def arg_list( self ):
         args = []
         args.append( self.var.val )
         return args

@@ -6,6 +6,7 @@ Field class for 1D scalar fields
 
 import numpy as np
 import maths_utils as mth
+import timeseries_plotting as tsp
 
 
 class Domain ( object ):
@@ -63,8 +64,8 @@ class Field1D( object ):
         self.update_ghosts()
         return
 
-    def update( self, update ):
-        self.val_noghost[:] += update[:]
+    def update( self, dvar ):
+        self.val_noghost[:] += dvar[:]
         self.update_ghosts()
         return
 
@@ -159,4 +160,55 @@ class Field1D( object ):
 
         self.val[ghost] = self.val[in1] - dn*bc.val*dx
         return
+
+
+class UnsteadyField1D( Field1D ):
+    """
+        Class for unsteady 1D scalar fields
+
+        same as Field1D, but value of field is saved at predetermined intervals in time
+    """
+    def __init__( self, name, mesh ):
+        super( self.__class__, self ).__init__( name, mesh )
+        self.dt = None
+        self.nt = 0
+        self.t  = 0
+        self.save_interval = 1
+        self.history = np.zeros( (1, len( self.val_noghost ) ) )
+        return
+
+    def set_field( self, data ):
+        super(  self.__class__, self ).set_field( data )
+        self.history[:] = self.val_noghost[:]
+
+    def set_timestep( self, dt ):
+        self.dt = dt
+        return
+
+    def set_save_interval( self, dt=None, nt=None ):
+        if   dt == None and nt == None:
+            return
+        elif dt != None and nt != None:
+            print( 'UnsteadyField1D '+self.name+'.set_save_interval : cannot specify both dt and nt' )
+            return
+        elif dt== None:
+            self.save_interval = nt
+        elif nt == None:
+            self.save_interval = int( dt / self.dt )
+
+        return
+
+    def update( self, dvar ):
+        super( self.__class__, self ).update( dvar )
+
+        self.nt+=1
+        self.t = self.dt*self.nt
+
+        if self.nt % self.save_interval == 0:
+            self.history = np.append( self.history, [self.val_noghost], axis=0 )
+
+        return
+
+    def plot_history( self ):
+        tsp.view_timeseries1D( self )
 

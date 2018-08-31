@@ -27,7 +27,7 @@ class  Test_Flux1D( object ):
         assert f.mesh is x
         return
 
-    def test_construct_arg_list( self ):
+    def test_arg_list( self ):
         mesh = np.linspace( -0.05, 1.05, 12 )
         x = fields.Domain( mesh )
         q = fields.Field1D( 'q', x )
@@ -35,7 +35,7 @@ class  Test_Flux1D( object ):
         f = fluxclass.Flux1D()
         f.set_variable( q )
 
-        args = f.construct_arg_list()
+        args = f.arg_list()
         assert len(args) == 1
         assert q.val in args
 
@@ -49,9 +49,9 @@ class  Test_Flux1D( object ):
         f = fluxclass.Flux1D()
         f.set_variable( q )
 
-        args = f.construct_arg_list()
+        args = f.arg_list()
 
-        flux = f.flux_calculation( args )
+        flux = f.flux_calculation( f.arg_list() )
 
         assert len(flux) == len(q.val) - 1 - 2*f.stencil_radius
         assert np.all( flux == np.asarray( range( len( q.val ) -3 ) ) +1 )
@@ -70,9 +70,8 @@ class  Test_Flux1D( object ):
         q.add_boundary_condition( bcp )
 
         flux = np.zeros( len( q.val ) -1 )
-        args = f.construct_arg_list()
 
-        f.periodic( bcp, flux, args )
+        f.periodic( bcp, flux, f.arg_list() )
 
         assert len( flux ) == len( q.val ) -1
         assert np.all( flux[r:-r] == 0 )
@@ -90,7 +89,7 @@ class  Test_Flux1D( object ):
         r = f.stencil_radius
         f.set_variable( q )
 
-        fmiddle = f.flux_calculation( f.construct_arg_list() )
+        fmiddle = f.flux_calculation( f.arg_list() )
         flux    = f.apply()
 
         assert len( flux ) == len( q.val_noghost ) + 1

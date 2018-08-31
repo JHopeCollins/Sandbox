@@ -21,7 +21,7 @@ class DiffusiveFlux1D( flc.Flux1D ):
         self.dcoeff = dcoeff
         return
 
-    def construct_arg_list( self ):
+    def arg_list( self ):
         """
         return the argument list for flux_calculation method
         """

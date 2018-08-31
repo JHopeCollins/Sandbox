@@ -28,8 +28,10 @@ t  = 0
 
 x  = np.linspace(-dx/2.0, L + dx/2.0, nx)
 x  = fields.Domain( x )
-u  = fields.Field1D( 'u', x )
+u  = fields.UnsteadyField1D( 'u', x )
 u.set_boundary_condition( name='periodic' )
+u.set_timestep( dt )
+u.set_save_interval( nt=5 )
 
 #set initial solution
 u_0 = np.asarray([ufunc(t, x0, nu) for x0 in x.x_noghost])
