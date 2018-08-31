@@ -27,7 +27,7 @@ class Flux1D( object ):
         For guidance in writing these methods for specific flux types, please see the templates included in this class, and previously implemented flux types.
     """
     def __init__( self ):
-        self.stencil_radius = None
+        self.stencil_radius = 1
         return
 
     def set_variable( self, var ):
@@ -79,12 +79,16 @@ class Flux1D( object ):
 
         args_temp = []
         for arg in args:
-            if type( arg ) == np.ndarray:
+            if arg is self.mesh.dx:
                 args_temp.append( mth.periodify_sym_patch( arg[1:-1], bound ) )
-                if arg is self.mesh.dx:
-                    pdx = ( self.mesh.dx[0] + self.mesh.dx[-1] ) /2.0
-                    args_temp[-1] = args_temp[-1][1:-1]
-                    args_temp[-1] = np.insert( args_temp[-1], bound-1, pdx )
+
+                pdx = ( self.mesh.dx[0] + self.mesh.dx[-1] ) /2.0
+                args_temp[-1] = args_temp[-1][1:-1]
+                args_temp[-1] = np.insert( args_temp[-1], bound-1, pdx )
+
+            elif type( arg ) == np.ndarray:
+                args_temp.append( mth.periodify_sym_patch( arg[1:-1], bound ) )
+
             else:
                 args_temp.append( arg )
 
@@ -106,4 +110,13 @@ class Flux1D( object ):
             ti += 1
 
         return
+
+    def construct_arg_list( self ):
+        args = []
+        args.append( self.var.val )
+        return args
+
+    def flux_calculation( self, args ):
+        var = args[0]
+        return np.asarray( range( len( var ) -3 ) ) +1
 
