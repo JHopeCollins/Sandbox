@@ -94,9 +94,6 @@ class CDS2( AdvectiveFlux ):
         dx  = args[1]
         u   = args[2]
 
-        # u_cellface   = ( u[  :-1] + u[  1:] )
-        # var_cellface = ( var[:-1] + var[1:] )
-
         u_cellface   = ( u[  1:-2] + u[  2:-1] )
         var_cellface = ( var[1:-2] + var[2:-1] )
 
@@ -104,7 +101,7 @@ class CDS2( AdvectiveFlux ):
 
         return flux
 
-    def dirichlet( self, bc, other_var_list, par_list ):
+    def dirichlet( self, bc, flux, args ):
         """
             Apply dirichlet boundary conditions.
 
@@ -118,19 +115,19 @@ class CDS2( AdvectiveFlux ):
             returns:
             fi_list: list of tuples. Each tuple contains a flux value (position 0 in tuple) and the index of the global flux array the value corresponds to (position 1 in tuple)
         """
+        var = args[0]
+        dx  = args[1]
+        u   = args[2]
 
-        u = other_var_list[0]
+        ghost = bc.indx
+        first = mth.step_into_array( bc.indx, 1 )
 
-        indx_in = mth.step_into_array( bc.indx, 1 )
-
-        u_boundary   = u[bc_indx] - ( u[indx_in] - u[bc_indx] ) / 2.0
+        u_boundary   = ( u[ghost] + u[first] ) / 2.0
         var_boundary = bc.val
 
-        f = u_boundary*var_boundary
+        flux[ bc.indx ] = u_boundary*var_boundary
 
-        fi_list = [ ( f, bc.indx ) ]
-
-        return fi_list
+        return
 
 
 class CDS2_2( AdvectiveFlux ):
@@ -222,7 +219,7 @@ class UDS1( UpwindFlux ):
 
         return flux
 
-    def dirichlet( self, bc, other_var_list, par_list ):
+    def dirichlet( self, bc, flux, args ):
         """
             Apply dirichlet boundary conditions.
 
@@ -236,16 +233,27 @@ class UDS1( UpwindFlux ):
             returns:
             fi_list: list of tuples. Each tuple contains a flux value (position 0 in tuple) and the index of the global flux array the value corresponds to (position 1 in tuple)
         """
-        u = other_var_list[0]
+        var = args[0]
+        dx  = args[1]
+        u   = args[2]
 
-        u_boundary   = u[bc.indx]
+        ghost = bc.indx
+        first = mth.step_into_array( bc.indx, 1 )
+
+        dn = bc.indx*2+1
+        direction = np.sign( u[ghost] + u[first] ).astype( int )
+
         var_boundary = bc.val
+        # if dn == direction:
+        #     upwind = ghost
+        # else:
+        #     upwind = first
+        upwind = ( dn*direction - 1 ) / ( -2 )
+        upwind = mth.step_into_array( bc.indx, upwind )
 
-        f = u[bc_indx]*bc.val
+        flux[ bc.index ] = u[upwind]*bc.val
 
-        fi_list = [ ( f, bc.indx ) ]
-
-        return fi_list
+        return
 
 
 class QUICK3( UpwindFlux ):

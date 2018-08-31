@@ -64,7 +64,7 @@ class Field1D( object ):
         return
 
     def update( self, update ):
-        self.val[:] += update[:]
+        self.val_noghost[:] += update[:]
         self.update_ghosts()
         return
 

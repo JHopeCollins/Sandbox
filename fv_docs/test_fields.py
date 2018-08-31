@@ -94,8 +94,7 @@ class Test_Field1D( object ):
         data = np.asarray( range( len( f.val_noghost ) ) )
         f.set_field( data )
 
-        update = np.zeros( len( f.val ) )
-        update[1:-1] = data[:]
+        update = data[:]
 
         f.update( update )
 

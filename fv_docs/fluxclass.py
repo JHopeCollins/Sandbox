@@ -48,25 +48,21 @@ class Flux1D( object ):
             returns:
             flux: array of fluxes at cell faces. len(flux) = len(var)+1
         """
-        flux = np.zeros( len( self.var.val ) + 1 )
+        flux = np.zeros( len( self.var.val ) - 1 )
 
         args = self.construct_arg_list()
 
-        bound = self.stencil_radius + 1
+        bound = self.stencil_radius
 
         flux[ bound:-bound ] = self.flux_calculation( args )
 
         for bc in self.var.bconds:
-
             bc_func = getattr( self, bc.name )
-            fi_list = bc_func( bc, args )
-
-            for f, i in fi_list:
-                flux[i] = f
+            bc_func( bc, flux, args )
 
         return flux
 
-    def periodic( self, bc, args ):
+    def periodic( self, bc, flux, args ):
         """
             Apply periodic boundary conditions.
 
@@ -96,21 +92,18 @@ class Flux1D( object ):
 
         fi_list = []
 
-        # place flux values into list with relevant global cell face index
-        # ti: temp flux index; i: global flux index
         ti = 0
-
-        for i in range( -self.stencil_radius-1, -2 ):
-            fi_list.append( (flux_temp[ti], i) )
+        for i in range( -self.stencil_radius, -1 ):
+            flux[i] = flux_temp[ti]
             ti += 1
 
-        fi_list.append( (flux_temp[ti], -2) )
-        fi_list.append( (flux_temp[ti],  1) )
+        flux[-1] = flux_temp[ti]
+        flux[ 0] = flux_temp[ti]
         ti += 1
 
-        for i in range( 2, self.stencil_radius+1 ):
-            fi_list.append( (flux_temp[ti], i) )
+        for i in range( 1, self.stencil_radius ):
+            flux[i] = flux_temp[ti]
             ti += 1
 
-        return fi_list
+        return
 
