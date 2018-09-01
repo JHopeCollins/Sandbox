@@ -13,13 +13,15 @@ import maths_utils as mth
 import advective_fluxschemes as afx
 import diffusive_fluxschemes as dfx
 import fields
+import equationclass
+import ODEintegrators
 
 # set up initial and analytical solution
 ufunc = mth.BurgersWave1D()
 
 #set up problem
 nx = 201+2
-nt = 50
+nt = 100
 L  = 2.*np.pi
 dx = L/(nx-1)
 nu = 0.27
@@ -45,30 +47,27 @@ print('Pe   =', max(u_0)*dx/nu)
 fluxv = dfx.CDS2()
 fluxi = afx.UDS1()
 
-fluxi.set_variable( u )
+fluxi.set_mesh( x )
 fluxi.set_advection_velocity( u )
 
-fluxv.set_variable( u )
+fluxv.set_mesh( x )
 fluxv.set_diffusion_coefficient( nu )
 
-#--------------------------------------------------
-
-flux_inv = np.empty(nx+1)
-flux_vis = np.empty(nx+1)
-flux     = np.empty(nx+1)
+bgrs = equationclass.Equation()
+bgrs.set_variable(  u     )
+bgrs.add_flux_term( fluxi )
+bgrs.add_flux_term( fluxv )
+bgrs.set_time_integration( ODEintegrators.RungeKutta4 )
 
 # timestepping
 for n in range(nt):
 
-    # calculate inviscid and viscous fluxes across each face
-    flux_vis = fluxv.apply()
-    flux_inv = fluxi.apply()
-    flux     = flux_inv + flux_vis
+    bgrs.step( dt )
 
-    dudt = -np.diff(flux)/dx
-    du   = dudt*dt
-
-    u.update( du )
+    # flux = fluxi.apply() + fluxv.apply()
+    # dudt = -np.diff(flux)/dx
+    # du   = dudt*dt
+    # u.update( du )
 
 u_exact = np.asarray( [ ufunc( nt*dt, xi, nu ) for xi in x.x_noghost ] )
 

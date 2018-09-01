@@ -30,33 +30,32 @@ class Flux1D( object ):
         self.stencil_radius = 1
         return
 
-    def set_variable( self, var ):
+    def set_mesh( self, x ):
         """
             Set the variable field that the flux is transporting
 
             input arguments:
             var: Field1D instance for variable
         """
-        self.var  = var
-        self.mesh = var.mesh
+        self.mesh = x
         return
 
-    def apply( self ):
+    def apply( self, q ):
         """
             Construct array of fluxes for all cell faces (excluding faces outside ghosts)
 
             returns:
             flux: array of fluxes at cell faces. len(flux) = len(var)+1
         """
-        flux = np.zeros( len( self.var.val ) - 1 )
+        flux = np.zeros( len( q.val_noghost ) + 1 )
 
-        args = self.arg_list()
+        args = self.arg_list( q )
 
         bound = self.stencil_radius
 
         flux[ bound:-bound ] = self.flux_calculation( args )
 
-        for bc in self.var.bconds:
+        for bc in q.bconds:
             bc_func = getattr( self, bc.name )
             bc_func( bc, flux, args )
 
@@ -111,9 +110,9 @@ class Flux1D( object ):
 
         return
 
-    def arg_list( self ):
+    def arg_list( self, q ):
         args = []
-        args.append( self.var.val )
+        args.append( q.val )
         return args
 
     def flux_calculation( self, args ):

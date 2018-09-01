@@ -86,6 +86,27 @@ class Test_Field1D( object ):
 
         return
 
+    def test_copy( self ):
+        mesh = np.linspace( -0.05, 1.05, 12 )
+        d = fields.Domain( mesh )
+        f = fields.Field1D( 'x', d )
+
+        data = np.asarray( range( len( f.val_noghost ) ) )
+        f.set_field( data )
+
+        bcp = fields.BoundaryCondition( name='periodic' )
+        f.add_boundary_condition( bcp )
+
+        g = f.copy()
+
+        assert g is not f
+        assert g.name == f.name
+        assert g.mesh == f.mesh
+        assert np.all( g.val    == f.val    )
+        assert np.all( g.bconds == f.bconds )
+
+        return
+
     def test_update( self ):
         mesh = np.linspace( -0.05, 1.05, 12 )
         d = fields.Domain( mesh )
@@ -243,4 +264,81 @@ class Test_Field1D( object ):
         assert f.val[-1] == -10
 
         return
+
+
+class Test_UnsteadyField1D( object ):
+    def test_init( self ):
+        mesh = np.linspace( 0, 1.0, 11 )
+        d = fields.Domain( mesh )
+        f = fields.UnsteadyField1D( 'x', d )
+
+        assert f.dt == None
+        assert f.nt == 0
+        assert f.t  == 0
+        assert f.save_interval == 1
+        assert np.all( f.history == np.zeros( (1, len( f.val_noghost ) ) ) )
+
+        return
+
+    def test_set_field( self ):
+        mesh = np.linspace( -0.05, 1.05, 12 )
+        d = fields.Domain( mesh )
+        f = fields.UnsteadyField1D( 'x', d )
+
+        data = np.asarray( range( len( f.val_noghost ) ) )
+        f.set_field( data )
+
+        assert np.all( f.history[:] == f.val_noghost[:] )
+
+        return
+
+    def test_set_timestep( self ):
+        mesh = np.linspace( -0.05, 1.05, 12 )
+        d = fields.Domain( mesh )
+        f = fields.UnsteadyField1D( 'x', d )
+        f.set_timestep( 0.1 )
+
+        assert f.dt == 0.1
+
+        return
+
+    def test_set_save_interval( self ):
+        mesh = np.linspace( -0.05, 1.05, 12 )
+        d = fields.Domain( mesh )
+        f = fields.UnsteadyField1D( 'x', d )
+        f.set_timestep( 0.1 )
+
+        f.set_save_interval()
+        assert f.save_interval == 1
+
+        f.set_save_interval( dt=0.1, nt=5 )
+        assert f.save_interval == 1
+
+        f.set_save_interval( dt=0.3 )
+        assert f.save_interval == 3
+
+        f.set_save_interval( nt=5 )
+        assert f.save_interval == 5
+
+        return
+
+    def test_update( self ):
+        mesh = np.linspace( -0.05, 1.05, 12 )
+
+        d = fields.Domain( mesh )
+        f = fields.UnsteadyField1D( 'x', d )
+        data = np.asarray( range( len( f.val_noghost ) ) )
+
+        f.set_field( data )
+        f.set_timestep( 0.1 )
+
+        update = data[:]
+        f.update( update )
+
+        assert np.all( f.history[-1,:] == f.val_noghost )
+
+        return
+
+
+
 

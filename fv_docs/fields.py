@@ -22,6 +22,7 @@ class Domain ( object ):
     def set_x( self, x ):
         self.x  = x.copy()
         self.dx = np.diff( x )
+        self.h  = ( self.dx[:-1] + self.dx[1:] )/2.0
 
         self.x_noghost  = self.x[ 1:-1]
         self.dx_noghost = self.dx[1:-1]
@@ -63,6 +64,13 @@ class Field1D( object ):
         self.val_noghost[:] = data[:]
         self.update_ghosts()
         return
+
+    def copy( self ):
+        g = Field1D( self.name, self.mesh )
+        g.set_field( self.val_noghost )
+        for bc in self.bconds:
+            g.add_boundary_condition( bc )
+        return g
 
     def update( self, dvar ):
         self.val_noghost[:] += dvar[:]
@@ -194,7 +202,7 @@ class UnsteadyField1D( Field1D ):
         elif dt== None:
             self.save_interval = nt
         elif nt == None:
-            self.save_interval = int( dt / self.dt )
+            self.save_interval = int( round( dt / self.dt ) )
 
         return
 
