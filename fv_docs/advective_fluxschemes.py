@@ -10,7 +10,7 @@ import maths_utils as mth
 import fluxclass as flc
 
 
-class AdvectiveFlux( flc.Flux1D ):
+class AdvectiveFlux1D( flc.Flux1D ):
     """
         Advective flux class for 1D fluxes
 
@@ -32,7 +32,7 @@ class AdvectiveFlux( flc.Flux1D ):
         return args
 
 
-class UpwindFlux( AdvectiveFlux ):
+class UpwindFlux1D( AdvectiveFlux1D ):
     """
         Upwind advective flux class for 1D fluxes
 
@@ -58,7 +58,7 @@ class UpwindFlux( AdvectiveFlux ):
         return indxs + n*direction - (direction-1)/2
 
 
-class CDS2( AdvectiveFlux ):
+class CDS2( AdvectiveFlux1D ):
     """
         Advective flux class
         Central Difference Scheme
@@ -130,7 +130,7 @@ class CDS2( AdvectiveFlux ):
         return
 
 
-class CDS2_2( AdvectiveFlux ):
+class CDS2_2( AdvectiveFlux1D ):
     """
         Advective flux class
         Central Difference Scheme
@@ -175,7 +175,7 @@ class CDS2_2( AdvectiveFlux ):
         return flux
 
 
-class UDS1( UpwindFlux ):
+class UDS1( UpwindFlux1D ):
     """
         Advective flux class
         Upwind Difference Scheme
@@ -256,7 +256,7 @@ class UDS1( UpwindFlux ):
         return
 
 
-class QUICK3( UpwindFlux ):
+class QUICK3( UpwindFlux1D ):
     """
         Advective flux class
         Quadratic Upwind Interpolation Scheme

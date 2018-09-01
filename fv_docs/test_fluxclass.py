@@ -9,7 +9,7 @@ import numpy as np
 import fields
 import fluxclass
 
-class  Test_Flux1D( object ):
+class Test_Flux1D( object ):
     def test_init( self ):
         f = fluxclass.Flux1D()
         assert f.stencil_radius == 1
