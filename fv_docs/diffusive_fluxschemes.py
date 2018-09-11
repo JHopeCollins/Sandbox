@@ -27,6 +27,7 @@ class DiffusiveFlux1D( flc.Flux1D ):
         args = []
         args.append( q.val )
         args.append( self.mesh.dx )
+        args.append( self.mesh.h  )
         args.append( self.dcoeff )
         return args
 
@@ -66,7 +67,8 @@ class CDS2( DiffusiveFlux1D ):
         """
         var = args[0]
         dx  = args[1]
-        nu  = args[2]
+        h   = args[2]
+        nu  = args[3]
 
         flux = var[2:-1] - var[1:-2]
         flux = -nu*flux/dx[1:-1]
@@ -109,7 +111,8 @@ class CDS4( DiffusiveFlux1D ):
         """
         var = args[0]
         dx  = args[1]
-        nu  = args[2]
+        h   = args[2]
+        nu  = args[3]
 
         flux = ( var[1:-4] - 27.0*var[2:-3] + 27.0*var[3:-2] - var[4:-1] ) / 24.0
         flux = -nu*flux/dx[2:-2]

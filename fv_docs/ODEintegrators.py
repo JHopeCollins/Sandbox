@@ -7,12 +7,16 @@ Integrator functions for ODEs of the form: dqdt + L(q) = 0
 def EulerForward1( dt, q, L ):
     """
     Return change in q over timestep dt according to explicit first order Euler forward scheme
+
+    integrates ODE of form dqdt + L(q) = 0 forward in time by dt
     """
     return -L(q)*dt
 
 def RungeKutta4( dt, q, L ):
     """
     Return change in q over timestep dt according to explicit fourth order Runge-Kutta scheme
+
+    integrates ODE of form dqdt + L(q) = 0 forward in time by dt
     """
 
     dq1 = EulerForward1( dt, q, L )

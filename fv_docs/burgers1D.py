@@ -21,10 +21,10 @@ ufunc = mth.BurgersWave1D()
 
 #set up problem
 nx = 201+2
-nt = 100
+nt = 1000
 L  = 2.*np.pi
 dx = L/(nx-1)
-nu = 0.27
+nu = 0.17
 dt = 0.001
 t  = 0
 
@@ -45,7 +45,7 @@ print('dif# =', nu*dt/(dx*dx))
 print('Pe   =', max(u_0)*dx/nu)
 
 fluxv = dfx.CDS2()
-fluxi = afx.UDS1()
+fluxi = afx.QUICK3()
 
 fluxi.set_mesh( x )
 fluxi.set_advection_velocity( u )
@@ -57,20 +57,16 @@ bgrs = equationclass.Equation()
 bgrs.set_variable(  u     )
 bgrs.add_flux_term( fluxi )
 bgrs.add_flux_term( fluxv )
-bgrs.set_time_integration( ODEintegrators.RungeKutta4 )
+bgrs.set_time_integration( ODEintegrators.EulerForward1 )
 
 # timestepping
 for n in range(nt):
-
     bgrs.step( dt )
-
-    # flux = fluxi.apply() + fluxv.apply()
-    # dudt = -np.diff(flux)/dx
-    # du   = dudt*dt
-    # u.update( du )
 
 u_exact = np.asarray( [ ufunc( nt*dt, xi, nu ) for xi in x.x_noghost ] )
 
-fig1, ax1 = mth.plot1Dsolution( x.x_noghost, u.val_noghost, u_0=u_0, u_e=u_exact )
-fig1.show()
+u.plot_history()
+
+# fig1, ax1 = mth.plot1Dsolution( x.x_noghost, u.val_noghost, u_0=u_0, u_e=u_exact )
+# fig1.show()
 

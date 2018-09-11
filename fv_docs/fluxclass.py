@@ -113,6 +113,8 @@ class Flux1D( object ):
     def arg_list( self, q ):
         args = []
         args.append( q.val )
+        args.append( self.mesh.dx )
+        args.append( self.mesh.h  )
         return args
 
     def flux_calculation( self, args ):

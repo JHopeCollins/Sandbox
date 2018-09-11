@@ -24,6 +24,8 @@ class Domain ( object ):
         self.dx = np.diff( x )
         self.h  = ( self.dx[:-1] + self.dx[1:] )/2.0
 
+        self.h = np.append( np.append( self.h[0], self.h ), self.h[1] )
+
         self.x_noghost  = self.x[ 1:-1]
         self.dx_noghost = self.dx[1:-1]
         return

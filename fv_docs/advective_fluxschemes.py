@@ -28,6 +28,7 @@ class AdvectiveFlux1D( flc.Flux1D ):
         args = []
         args.append( q.val )
         args.append( self.mesh.dx )
+        args.append( self.mesh.h  )
         args.append( self.vel.val )
         return args
 
@@ -95,12 +96,16 @@ class CDS2( AdvectiveFlux1D ):
         """
         var = args[0]
         dx  = args[1]
-        u   = args[2]
+        h   = args[2]
+        u   = args[3]
 
-        u_cellface   = ( u[  1:-2] + u[  2:-1] )
-        var_cellface = ( var[1:-2] + var[2:-1] )
+        wl = 0.5*h[1:-2]/dx[1:-1]
+        wr = 1 - wl
 
-        flux = u_cellface*var_cellface/4.0
+        u_cellface   = ( wl*u[  1:-2] + wr*u[  2:-1] )
+        var_cellface = ( wl*var[1:-2] + wr*var[2:-1] )
+
+        flux = u_cellface*var_cellface
 
         return flux
 
@@ -120,7 +125,8 @@ class CDS2( AdvectiveFlux1D ):
         """
         var = args[0]
         dx  = args[1]
-        u   = args[2]
+        h   = args[2]
+        u   = args[3]
 
         ghost = bc.indx
         first = mth.step_into_array( bc.indx, 1 )
@@ -168,12 +174,16 @@ class CDS2_2( AdvectiveFlux1D ):
         """
         var = args[0]
         dx  = args[1]
-        u   = args[2]
+        h   = args[2]
+        u   = args[3]
 
-        f1 = u[1:-2]*var[1:-2]
-        f2 = u[2:-1]*var[2:-1]
+        fl = u[1:-2]*var[1:-2]
+        fr = u[2:-1]*var[2:-1]
 
-        flux = ( f1 + f2 )/2.0
+        wl = 0.5*h[1:-2]/dx[1:-1]
+        wr = 1 - wl
+
+        flux = wl*fl + wr*fr
 
         return flux
 
@@ -212,7 +222,8 @@ class UDS1( UpwindFlux1D ):
         """
         var = args[0]
         dx  = args[1]
-        u   = args[2]
+        h   = args[2]
+        u   = args[3]
 
         direction = self.cell_face_direction( u )
         indxs     = self.cell_indxs( u )
@@ -238,7 +249,8 @@ class UDS1( UpwindFlux1D ):
         """
         var = args[0]
         dx  = args[1]
-        u   = args[2]
+        h   = args[2]
+        u   = args[3]
 
         ghost = bc.indx
         first = mth.step_into_array( bc.indx, 1 )
@@ -293,7 +305,8 @@ class QUICK3( UpwindFlux1D ):
         """
         var = args[0]
         dx  = args[1]
-        u   = args[2]
+        h   = args[2]
+        u   = args[3]
 
         direction = self.cell_face_direction( u )
         indxs     = self.cell_indxs( u )
@@ -302,11 +315,25 @@ class QUICK3( UpwindFlux1D ):
         upupwind  = self.upwind_indx(   indxs, direction, 2 )
         downwind  = self.downwind_indx( indxs, direction, 2 )
 
-        flux_u  = u[   upwind ]*var[   upwind ]
-        flux_uu = u[ upupwind ]*var[ upupwind ]
-        flux_d  = u[ downwind ]*var[ downwind ]
+        #                      |<----h---->|
+        # cell     |     D     |     U     |     UU     |
+        # face                 e
 
-        flux = 0.375*flux_d + 0.75*flux_u - 0.125*flux_uu
+        e_U  =                   0.5*h[  upwind]
+        e_UU =                       h[  upwind] + 0.5*h[upupwind]
+        D_e  = 0.5*h[downwind]
+        D_U  = 0.5*h[downwind] + 0.5*h[  upwind]
+        D_UU = 0.5*h[downwind] +     h[  upwind] + 0.5*h[upupwind]
+        U_UU =                   0.5*h[  upwind] + 0.5*h[upupwind]
+
+        w1 = ( e_U * e_UU ) / ( D_U  * D_UU )
+        w2 = ( e_U * D_e  ) / ( U_UU * D_UU )
+
+        f_u  = u[   upwind ]*var[   upwind ]
+        f_uu = u[ upupwind ]*var[ upupwind ]
+        f_d  = u[ downwind ]*var[ downwind ]
+
+        flux = f_u + w1*( f_d - f_u ) + w2*( f_u - f_uu )
 
         return flux
 

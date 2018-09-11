@@ -34,8 +34,10 @@ class Test_Flux1D( object ):
         f.set_mesh( x )
 
         args = f.arg_list( q )
-        assert len(args) == 1
-        assert q.val in args
+        assert len(args) == 3
+        assert q.val is args[0]
+        assert x.dx  is args[1]
+        assert x.h   is args[2]
 
         return
 

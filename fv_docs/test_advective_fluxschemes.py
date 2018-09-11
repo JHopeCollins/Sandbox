@@ -40,10 +40,11 @@ class Test_AdvectiveFlux1D( object ):
 
         args = f.arg_list( q )
 
-        assert len( args ) == 3
+        assert len( args ) == 4
         assert args[0] is q.val
         assert args[1] is x.dx
-        assert args[2] is c.val
+        assert args[2] is x.h
+        assert args[3] is c.val
 
         return
 
