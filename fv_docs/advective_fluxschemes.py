@@ -40,12 +40,15 @@ class UpwindFlux1D( AdvectiveFlux1D ):
     """
 
     def cell_face_direction( self, u ):
+        """
+        return sign of average value of u at cell faces
+        """
         r = self.stencil_radius
         return np.sign( u[r:-(r+1)] + u[r+1:-r] ).astype( int )
 
     def cell_indxs( self, u ):
         """
-        return indices of cell to left of each domain-centre cell
+        return indices of cell to left of each domain-centre face
         """
         r = self.stencil_radius
         l = len( u ) - ( 2*r + 1 )
