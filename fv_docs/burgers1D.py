@@ -10,11 +10,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import maths_utils as mth
 
-import advective_fluxschemes as afx
-import diffusive_fluxschemes as dfx
+import advective_fluxclasses as afc
+import advective_fluxschemes as afs
+import diffusive_fluxschemes as dfs
 import fields
 import equationclass
 import ODEintegrators
+import reconstructions as rc
+import jump_fluxes as jf
 
 # set up initial and analytical solution
 ufunc = mth.BurgersWave1D()
@@ -44,12 +47,18 @@ print('cfl  =', max(u_0)*dt/dx)
 print('dif# =', nu*dt/(dx*dx))
 print('Pe   =', max(u_0)*dx/nu)
 
-fluxv = dfx.CDS2()
-fluxi = afx.QUICK3()
+# fluxi = afs.UDS1()
+# fluxi.set_mesh( x )
+# fluxi.set_advection_velocity( u )
 
+fluxi = afc.REAFlux1D()
 fluxi.set_mesh( x )
+fluxi.set_reconstruction( rc.minmod2 )
+fluxi.set_reconstruction_radius( 2 )
+fluxi.set_evolution( jf.upwind1 )
 fluxi.set_advection_velocity( u )
 
+fluxv = dfs.CDS2()
 fluxv.set_mesh( x )
 fluxv.set_diffusion_coefficient( nu )
 

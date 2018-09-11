@@ -285,6 +285,7 @@ def minmod( a, b ):
     c[mask] = 0
 
     return c
+
 def maxmod( a, b ):
     """
     Return input argument with largest modulus if a,b have same sign, else return 0
@@ -308,13 +309,13 @@ def minmod3( a, b, c ):
     """
     d = np.zeros( len( a ) )
 
-    mask = ( np.abs( a ) < np.abs( b ) ) and ( np.abs( a ) < np.abs( c ) )
+    mask = np.logical_and( np.abs( a ) < np.abs( b ) , np.abs( a ) < np.abs( c ) )
     d[mask] = a[mask]
 
-    mask = ( np.abs( b ) < np.abs( c ) ) and ( np.abs( b ) < np.abs( a ) )
+    mask = np.logical_and( np.abs( b ) < np.abs( c ) , np.abs( b ) < np.abs( a ) )
     d[mask] = b[mask]
 
-    mask = ( np.abs( c ) < np.abs( a ) ) and ( np.abs( c ) < np.abs( b ) )
+    mask = np.logical_and( np.abs( c ) < np.abs( a ) , np.abs( c ) < np.abs( b ) )
     d[mask] = c[mask]
 
     mask = a*b <= 0

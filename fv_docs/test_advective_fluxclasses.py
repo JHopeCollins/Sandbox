@@ -8,6 +8,8 @@ Includes tests for AdvectiveFlux class
 import numpy as np
 import fields
 import advective_fluxclasses as afx
+import reconstructions as rc
+import jump_fluxes as jf
 
 class Test_AdvectiveFlux1D( object ):
     def test_set_advection_velocity( self ):
@@ -93,5 +95,45 @@ class Test_UpwindFlux1D( object ):
         down2 = f.downwind_indx( i, d, 2 )
         assert np.all( down1 == [1, 3, 3, 4, 6] )
         assert np.all( down2 == [0, 4, 2, 3, 7] )
+        return
+
+
+class Test_REAFlux1D( object ):
+    def test_set_reconstruction_radius( self ):
+        f = afx.REAFlux1D()
+        f.set_reconstruction_radius( 3 )
+
+        assert f.stencil_radius == 3
+        return
+
+    def test_set_reconstruction( self ):
+        f = afx.REAFlux1D()
+        f.set_reconstruction( rc.PCM1 )
+
+        assert f.reconstruct == rc.PCM1
+        return
+
+    def test_set_evolution( self ):
+        f = afx.REAFlux1D()
+        f.set_evolution( jf.upwind1 )
+
+        assert f.evolve == jf.upwind1
+        return
+
+    def test_flux_calculation( self ):
+        f = afx.REAFlux1D()
+        f.set_reconstruction( rc.PCM1 )
+        f.set_reconstruction_radius( 1 )
+        f.set_evolution( jf.upwind1 )
+
+        #                 g  1  2   3  g
+        q  = np.asarray( [1, 2, 3,  4, 5] )
+        v  = np.asarray( [1, 1, 1, -3, 1] )
+        h  = np.asarray( [1, 1, 1,  1, 1] )
+        dx = np.asarray( [1, 1, 1,  1] )
+
+        flux = f.flux_calculation( [q, dx, h, v] )
+
+        assert np.all( flux == [2, -12] )
         return
 
