@@ -7,7 +7,7 @@ Includes tests for DiffusiveFlux1D class
 
 import numpy as np
 import fields
-import diffusive_fluxschemes as dfx
+import diffusive_fluxclasses as dfx
 
 class Test_DiffusiveFlux1D( object ):
     def test_set_diffusion_coefficient( self ):

@@ -7,7 +7,7 @@ Includes tests for AdvectiveFlux class
 
 import numpy as np
 import fields
-import advective_fluxschemes as afx
+import advective_fluxclasses as afx
 
 class Test_AdvectiveFlux1D( object ):
     def test_set_advection_velocity( self ):

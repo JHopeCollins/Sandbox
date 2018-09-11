@@ -269,3 +269,57 @@ def periodify_asym_patch_origin( array, ln, rn, origin ):
 
     return parray
 
+def minmod( a, b ):
+    """
+    Return input argument with smallest modulus if a,b have same sign, else return 0
+    """
+    c = np.zeros( len( a ) )
+
+    mask = np.abs( a ) < np.abs( b )
+    c[mask] = a[mask]
+
+    mask = np.abs( b ) < np.abs( a )
+    c[mask] = b[mask]
+
+    mask = a*b <= 0
+    c[mask] = 0
+
+    return c
+def maxmod( a, b ):
+    """
+    Return input argument with largest modulus if a,b have same sign, else return 0
+    """
+    c = np.zeros( len( a ) )
+
+    mask = np.abs( a ) > np.abs( b )
+    c[mask] = a[mask]
+
+    mask = np.abs( b ) > np.abs( a )
+    c[mask] = b[mask]
+
+    mask = a*b <= 0
+    c[mask] = 0
+
+    return c
+
+def minmod3( a, b, c ):
+    """
+    Return input argument with smallest modulus if a,b have same sign, else return 0
+    """
+    d = np.zeros( len( a ) )
+
+    mask = ( np.abs( a ) < np.abs( b ) ) and ( np.abs( a ) < np.abs( c ) )
+    d[mask] = a[mask]
+
+    mask = ( np.abs( b ) < np.abs( c ) ) and ( np.abs( b ) < np.abs( a ) )
+    d[mask] = b[mask]
+
+    mask = ( np.abs( c ) < np.abs( a ) ) and ( np.abs( c ) < np.abs( b ) )
+    d[mask] = c[mask]
+
+    mask = a*b <= 0
+    d[mask] = 0
+
+    return d
+
+

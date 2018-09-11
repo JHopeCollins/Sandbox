@@ -7,8 +7,8 @@ Includes tests for Equation class
 
 import numpy as np
 import fields
-import advective_fluxschemes as afx
-import diffusive_fluxschemes as dfx
+import advective_fluxclasses as afx
+import diffusive_fluxclasses as dfx
 import equationclass
 import ODEintegrators
 
@@ -82,7 +82,7 @@ class Test_Equation( object ):
         dq = eq.spatial_operator( q )
 
         dq_test = fa.apply( q ) + fd.apply( q )
-        dq_test = np.diff( dq_test )/ x.h
+        dq_test = np.diff( dq_test )/ x.h[1:-1]
 
         assert np.all( dq == dq_test )
 
