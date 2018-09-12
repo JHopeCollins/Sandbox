@@ -33,8 +33,8 @@ def minmod2( u, dx, h ):
     sigma  = mth.minmod( sigmaL, sigmaR )
 
     du = 0.5*sigma*h[1:-1]
-    uR = u[ 2:-1 ] - du[ :-1]
-    uL = u[ 1:-2 ] + du[1:  ]
+    uR = u[ 2:-1 ] - du[1:  ]
+    uL = u[ 1:-2 ] + du[ :-1]
 
     return uL, uR
 
@@ -57,8 +57,8 @@ def superbee2( u, dx, h ):
     sigma = mth.maxmod( sigma1, sigma2 )
 
     du = 0.5*sigma*h[1:-1]
-    uR = u[ 2:-1 ] - du[ :-1]
-    uL = u[ 1:-2 ] + du[1:  ]
+    uR = u[ 2:-1 ] - du[1:  ]
+    uL = u[ 1:-2 ] + du[ :-1]
 
     return uL, uR
 
@@ -79,8 +79,8 @@ def MC2( u, dx, h ):
     sigma = mth.minmod3( 2*sigmaL, 2*sigmaR, sigmaC )
 
     du = 0.5*sigma*h[1:-1]
-    uR = u[ 2:-1 ] - du[ :-1]
-    uL = u[ 1:-2 ] + du[1:  ]
+    uR = u[ 2:-1 ] - du[1:  ]
+    uL = u[ 1:-2 ] + du[ :-1]
 
     return uL, uR
 
