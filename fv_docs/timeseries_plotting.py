@@ -5,7 +5,6 @@ plotting timeseries data in a scrollable plot
 """
 
 import numpy              as np
-import function_burgers1D as bgr
 import matplotlib.pyplot  as plt
 
 def view_timeseries1D( field ):

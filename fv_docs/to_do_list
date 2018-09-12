@@ -1,0 +1,130 @@
+ -----------------------------------
+| #####  #####  #####  #####  ##### |
+|   #    #      #        #    #     |
+|   #    ####   #####    #    ##### |
+|   #    #          #    #        # |
+|   #    #####  #####    #    ##### |
+ -----------------------------------
+   maths_utils.py           needs starting
+   ODEintegrators.py        needs starting
+   reconstructions.py       second order functions need testing
+   advective_fluxschemes    needs starting
+   diffusive_fluxschemes    needs starting
+
+
+URGENT---------------------URGENT
+
+DOCSTRINGS needs updating, several are out of date, especially where flux function arguments have been changed
+
+boundary conditions
+   Whole load of indexing trickery across different files to deal with ghost cells.
+      Work out what/where they all are and come up with a consistent approach.
+      Try and deal with ghost cells as far up the abstraction as possible, where possible (ie in or close to Flux1D class). I don't want to have to think about them unless I'm writing a boundary condition function for fluxes on coupled equations - they're a pain and I don't like them.
+   Change to normal field.val attributes not including ghosts, and separate field.val_wg (with ghosts) attribute probably nicer than having val_noghosts as normal interface for actual domain extent
+      Same for Domain.(x, h, dx) etc
+
+URGENT---------------------URGENT
+
+
+
+MEDIUM-TERM----------------MEDIUM-TERM
+
+Flux.periodic bc method
+   bodge for periodifying dx array is not nice code, difficult to read
+      maybe write mth.periodify_diff_array functions for doing this for inter-cell values?
+
+SetOfEquations / SystemOfEquations classes
+   set of equations class to have multiple Equation or SystemOfEquation class instances, and just gives one interface to evolve them at the same time (but using each instances step method separately).
+      this is intended to be used to throw together new systems and start testing quickly. SystemOfEquations should be used for regularly used systems
+   system of equations describes a system of conservation laws, and evolves them together using a single flux function eg. Riemann solvers for gas dynamics evolve three conservation laws (in 1D), and requires data on all three variables to do this (ie messy to do using three separate equation instances).
+      SystemOfEquations could possibly be an abstract class like Flux1D (ie only subclasses of this class are meant to be used), where subclasses are Euler, NavierStokes, Euler with passive scalar etc
+
+SystemOfEquations subclasses
+   Euler Equations
+
+REA advective fluxes
+      evolution schemes - burgers equation
+         godunov method for burgers equation
+      evolution schemes - euler (flux difference splitting)
+         Godunov exact Riemann flux
+         Roe approximate Riemann flux
+
+diffusive_fluxschemes.CDS4
+   need to update to handle variable mesh spacing
+
+maths_utils
+   L2-norm estimation function
+
+numerical scheme testing
+   Sod's problem (1D shock tube Riemann problem) [visual test]
+   order of accuracy estimation (error convergence for varying dx) [quantitative test]
+   linear advection of periodic top hat and bump profile [visual test]
+
+MEDIUM-TERM----------------MEDIUM-TERM
+
+
+
+LONG-TERM------------------LONG-TERM
+
+REA advective fluxes
+      reconstruction/limiter schemes
+         PPM
+         WENOx
+      evolution schemes (numerical jump flux) - generic / scalar advection
+         Lax-Wendroff?
+      evolution schemes - euler (flux difference splitting)
+         HLL/HLLC ?
+      evolution schemes - euler (flux vector splitting)
+         MUSCL
+         AUSMx
+      evolution schemes - shallow water
+         godunov method
+
+SystemOfEquations subclasses
+   Shallow water equations
+
+boundary conditions
+   Does ghost calculation OoA needs to match scheme's for higher order schemes? probably should
+
+ODEintegrators
+   low storage RK schemes
+   generation of arbitrary order RK schemes from tableu
+
+numerical scheme testing
+   modified wavenumber estimation [visual/quantitative test]
+   numerical viscosity estimation [quantitative test]
+      rate of decrease of rms of sinusoidal ICs, comparing:
+         numerical solution of linear advection-          equation
+         analytic  solution of linear advection-diffusion equation
+   other 1D tests from Toro [visual tests]
+
+LONG-TERM------------------LONG-TERM
+
+
+
+EXTRAS---------------------EXTRAS
+
+SteadyEquation / UnsteadyEquation classes
+   current Equation class is actually UnsteadyEquation
+   SteadyEquation class uses pseudo-timestepping so needs a convergence criteria and possibility of local timestepping extension
+
+Field class
+   plot field method
+
+UnsteadyField class
+   plot_history method to also plot initial conditions
+
+ExactField class
+   write it
+   attribute of exact solution
+   methods for calculating L2 error etc
+   plot field method also plots exact solution
+
+UnsteadyExactField
+   write it
+   attribute of exact solution
+   methods for calculating L2 error etc at specific timestep or evolution of
+   plot method plots initial conditions and exact solutions at current timestep
+
+EXTRAS---------------------EXTRAS
+

@@ -76,6 +76,7 @@ class Flux1D( object ):
         """
         bound = 2*self.stencil_radius
 
+        # temporary argument list spanning periodic plane
         args_temp = []
         for arg in args:
             if arg is self.mesh.dx:
@@ -93,20 +94,18 @@ class Flux1D( object ):
 
         flux_temp = self.flux_calculation( args_temp )
 
-        fi_list = []
-
-        ti = 0
+        j = 0
         for i in range( -self.stencil_radius, -1 ):
-            flux[i] = flux_temp[ti]
-            ti += 1
+            flux[i] = flux_temp[j]
+            j += 1
 
-        flux[-1] = flux_temp[ti]
-        flux[ 0] = flux_temp[ti]
-        ti += 1
+        flux[-1] = flux_temp[j]
+        flux[ 0] = flux_temp[j]
+        j += 1
 
         for i in range( 1, self.stencil_radius ):
-            flux[i] = flux_temp[ti]
-            ti += 1
+            flux[i] = flux_temp[j]
+            j += 1
 
         return
 
