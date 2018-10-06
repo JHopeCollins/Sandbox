@@ -52,8 +52,19 @@ REA advective fluxes
 diffusive_fluxschemes.CDS4
    need to update to handle variable mesh spacing
 
+Lax-Friedrichs/Wendroff type fluxes with .set_dt() method and .dt attribute
+
+Flux limiter class type 1
+   combines low order flux and high order flux
+   F = F_low + limiter * ( F_high * F_low )
+   flux limiter functions
+
+Flux limiter class type 2
+   flux calculated from advection of piecewise linear profile
+   limit the jump at cell faces ( some examples in BvW's ME4 CFD notes and Numerical Methods for Hyperbolic Conservation Laws notes from PDE CDT course )
+
 maths_utils
-   L2-norm estimation function
+   Lp-norm estimation function
 
 numerical scheme testing
    Sod's problem (1D shock tube Riemann problem) [visual test]
@@ -85,6 +96,7 @@ SystemOfEquations subclasses
 
 boundary conditions
    Does ghost calculation OoA needs to match scheme's for higher order schemes? probably should
+      need variable number of ghost cells based on stencil width. possibly should be default for REA schemes where left and right states are needed.
 
 ODEintegrators
    low storage RK schemes

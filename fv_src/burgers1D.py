@@ -17,7 +17,7 @@ import fields
 import equationclass
 import ODEintegrators
 import reconstructions as rc
-import jump_fluxes as jf
+import evolutions as ev
 
 # set up initial and analytical solution
 ufunc = mth.BurgersWave1D()
@@ -55,7 +55,7 @@ fluxi = afc.REAFlux1D()
 fluxi.set_mesh( x )
 fluxi.set_reconstruction( rc.minmod2 )
 fluxi.set_reconstruction_radius( 2 )
-fluxi.set_evolution( jf.upwind1 )
+fluxi.set_evolution( ev.upwind1 )
 fluxi.set_advection_velocity( u )
 
 fluxv = dfs.CDS2()
