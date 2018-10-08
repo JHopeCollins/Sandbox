@@ -5,7 +5,7 @@ Test suite for jump_fluxes.py
 """
 
 import numpy as np
-import jump_fluxes as jf
+import evolutions as ev
 
 def test_upwind1( ):
     qL = np.asarray( [ 1,  2,  3,  4] )
@@ -18,7 +18,7 @@ def test_upwind1( ):
     h  = np.asarray( [ 1,  1,  1,  1, 1] )
     dx = 1
 
-    f = jf.upwind1( qL, qR, vL, vR, dx, h )
+    f = ev.upwind1( qL, qR, vL, vR, dx, h )
 
     assert np.all( f == [ 1, -24, -26, 4 ] )
 
@@ -35,7 +35,7 @@ def test_LaxFriedrichs1( ):
     dx = 0.5
     dt = 0.1
 
-    f = jf.LaxFriedrichs1( qL, qR, vL, vR, dx, dt )
+    f = ev.LaxFriedrichs1( qL, qR, vL, vR, dx, dt )
 
     ftest= []
     ftest.append( ( 1 + 22 - 0.5*10/0.1 )*0.5 )

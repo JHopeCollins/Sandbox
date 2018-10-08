@@ -9,7 +9,7 @@ import numpy as np
 import fields
 import advective_fluxclasses as afx
 import reconstructions as rc
-import jump_fluxes as jf
+import evolutions as ev
 
 class Test_AdvectiveFlux1D( object ):
     def test_set_advection_velocity( self ):
@@ -115,16 +115,16 @@ class Test_REAFlux1D( object ):
 
     def test_set_evolution( self ):
         f = afx.REAFlux1D()
-        f.set_evolution( jf.upwind1 )
+        f.set_evolution( ev.upwind1 )
 
-        assert f.evolve == jf.upwind1
+        assert f.evolve == ev.upwind1
         return
 
     def test_flux_calculation( self ):
         f = afx.REAFlux1D()
         f.set_reconstruction( rc.PCM1 )
         f.set_reconstruction_radius( 1 )
-        f.set_evolution( jf.upwind1 )
+        f.set_evolution( ev.upwind1 )
 
         #                 g  1  2   3  g
         q  = np.asarray( [1, 2, 3,  4, 5] )
