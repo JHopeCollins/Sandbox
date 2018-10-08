@@ -17,6 +17,8 @@
   "test_equationclass.py::Test_Equation::()::test_add_flux_term", 
   "test_equationclass.py::Test_Equation::()::test_spatial_operator", 
   "test_equationclass.py::Test_Equation::()::test_step", 
+  "test_evolutions.py::test_upwind1", 
+  "test_evolutions.py::test_LaxFriedrichs1", 
   "test_fields.py::Test_Domain::()::test_init", 
   "test_fields.py::Test_Domain::()::test_set_x", 
   "test_fields.py::Test_BoundaryCondition::()::test_init", 
@@ -41,7 +43,5 @@
   "test_fluxclass.py::Test_Flux1D::()::test_flux_calculation", 
   "test_fluxclass.py::Test_Flux1D::()::test_periodic", 
   "test_fluxclass.py::Test_Flux1D::()::test_apply", 
-  "test_jump_fluxes.py::test_upwind1", 
-  "test_jump_fluxes.py::test_LaxFriedrichs1", 
   "test_reconstructions.py::test_PCM1"
 ]
