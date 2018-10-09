@@ -28,12 +28,12 @@ class Test_Legendre( object ):
 
         return
 
-    def test_LG_quadrature( self ):
+    def test_GL_quad_0w( self ):
         L = polys.Legendre()
 
-        assert L.LG_quadrature(0,0) == ( L.zeros[0][0], L.weights[0][0] )
+        assert L.GL_quad_0w(0,0) == ( L.zeros[0][0], L.weights[0][0] )
 
-        assert L.LG_quadrature(4,3) == ( L.zeros[4][3], L.weights[4][3] )
+        assert L.GL_quad_0w(4,3) == ( L.zeros[4][3], L.weights[4][3] )
 
 
 def runge( x ): return 1 / ( 1 + 25*x*x )
@@ -77,5 +77,10 @@ def test_lagrange_interpolator( ):
 
     assert interp( np.asarray([0.7]) ) + 0.226 < 0.001
 
+    return
+
+def test_GLquad( ):
+    i = polys.GLquad( lambda x : np.log(x)/x, 5, [1,8] )
+    assert i - 2.165234 < 0.000001
     return
 
