@@ -7,15 +7,15 @@ plotting timeseries data in a scrollable plot
 import numpy              as np
 import matplotlib.pyplot  as plt
 
-def view_timeseries1D( field ):
-    fig, ax = plt.subplots()
-    ax.idx = 0
-    ax.field = field
-    ax.plot( field.mesh.x[1:-1], field.history[0,:] )
-    fig.show()
+def previous_slice( ax ):
+    f = ax.field
+    ax.idx = ( ax.idx -1 ) % f.history.shape[0]
+    ax.lines[0].set_ydata( f.history[ax.idx,:] )
 
-    fig.canvas.mpl_connect( 'scroll_event',    process_scroll )
-    fig.canvas.mpl_connect( 'key_press_event', process_key    )
+def next_slice( ax ):
+    f = ax.field
+    ax.idx = ( ax.idx +1 ) % f.history.shape[0]
+    ax.lines[0].set_ydata( f.history[ax.idx,:] )
 
 def process_key( event ):
     fig = event.canvas.figure
@@ -35,13 +35,14 @@ def process_scroll( event ):
         next_slice( ax )
     fig.canvas.draw()
 
-def previous_slice( ax ):
-    f = ax.field
-    ax.idx = ( ax.idx -1 ) % f.history.shape[0]
-    ax.lines[0].set_ydata( f.history[ax.idx,:] )
+def view_timeseries1D( field ):
+    fig, ax = plt.subplots()
+    ax.idx = 0
+    ax.field = field
+    ax.plot( field.mesh.x[1:-1], field.history[0,:] )
+    fig.show()
 
-def next_slice( ax ):
-    f = ax.field
-    ax.idx = ( ax.idx +1 ) % f.history.shape[0]
-    ax.lines[0].set_ydata( f.history[ax.idx,:] )
+    fig.canvas.mpl_connect(    'scroll_event', process_scroll )
+    fig.canvas.mpl_connect( 'key_press_event', process_key    )
+
 

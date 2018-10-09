@@ -3,3 +3,4 @@ atom-editor-cheat-sheet.pdf
 *.pyc
 CUDA
 test papers
+.pytest_cache/
