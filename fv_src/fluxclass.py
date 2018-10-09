@@ -110,6 +110,9 @@ class Flux1D( object ):
         return
 
     def arg_list( self, q ):
+        """
+        return a dummy argument list for the sake of testing .apply method
+        """
         args = []
         args.append( q.val )
         args.append( self.mesh.dx )
@@ -117,6 +120,9 @@ class Flux1D( object ):
         return args
 
     def flux_calculation( self, args ):
+        """
+        return a dummy flux calculation for the sake of testing .apply method
+        """
         var = args[0]
         return np.asarray( range( len( var ) -3 ) ) +1
 

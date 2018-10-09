@@ -212,7 +212,7 @@ class UnsteadyField1D( Field1D ):
         super( self.__class__, self ).update( dvar )
 
         self.nt+=1
-        self.t = self.dt*self.nt
+        self.t += self.dt
 
         if self.nt % self.save_interval == 0:
             self.history = np.append( self.history, [self.val_noghost], axis=0 )
