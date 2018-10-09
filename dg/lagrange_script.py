@@ -3,11 +3,7 @@ import matplotlib.pyplot as plt
 import polys
 
 
-def runge( x ):
-    """
-    return the value of Runge's function at x
-    """
-    return 1/(1 + 25*x*x)
+def runge( x ): return 1.0/(1.0 + 25.0*x*x)
 
 x = np.linspace( -1, 1, 101 )
 y = runge( x )

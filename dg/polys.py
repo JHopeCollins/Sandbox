@@ -1,5 +1,8 @@
 """
 Written by: Josh Hope-Collins ( joshua.hope-collins@eng.ox.ac.uk )
+
+mish mash of things I probably need for dg code
+to clean up later
 """
 
 import numpy as np
@@ -45,13 +48,12 @@ def lagrange_polynomial( x, y, j ):
     return a function which is the jth lagrange interpolating polynomial for data y at absicca x
     """
 
-    d = np.prod( np.delete( x[j] - x, j ) )
+    d = 1 / np.prod( np.delete( x[j] - x, j ) )
 
-    # old line for float z, replaced by line below for array z
-    # poly = lambda z : y[j] * np.prod( z - np.delete( x, j ) ) / d
+    poly = lambda z : y[j] * d * np.prod( z - np.delete( x, j ) )
 
-    poly = lambda z : y[j] * np.prod( np.repeat(                 z[np.newaxis, :], len( x ) -1, axis=0 ) -
-                                      np.repeat( np.delete( x, j )[:, np.newaxis], len( z ),    axis=1 ), axis=0 ) / d
+    # poly = lambda z : y[j] * np.prod( np.repeat(                 z[np.newaxis, :], len( x ) -1, axis=0 ) -
+    #                                   np.repeat( np.delete( x, j )[:, np.newaxis], len( z ),    axis=1 ), axis=0 ) * d
 
     return poly
 
@@ -76,6 +78,45 @@ def lagrange_interpolator( xi, yi ):
 
     return interpolator
 
+def lagrange_derivative( x, y, j ):
+    """
+    returns a function which is the derivative of the jth lagrange interpolating polynomial for data y at absicca x
+    """
+
+    xwij = []
+    for i in np.delete( range( len( x ) ), j ):
+        xwij.append( np.delete( x, [ i, j ] ) )
+
+    d = map( lambda xk : np.prod( x[j] - xk ), xwij )
+
+    d = 1 / ( ( x[j] - np.delete( x, j ) ) * d )
+
+    der = lambda z : y[j] * sum( d * map( lambda xk : np.prod(z - xk), xwij ) )
+
+    return der
+
+def lagrange_derivatives( x, y ):
+    """
+    returns a list of functions which are the derivatives of the lagrange interpolating polynomials for data y at absicca x
+    """
+
+    ders = []
+    for j in range( len ( x ) ):
+        ders.append( lagrange_derivative( x, y, j ) )
+
+    return ders
+
+def lagrange_interp_deriv( xi, yi ):
+    """
+    returnts a function which is the derivative of the lagrange interpolating polynomial of data y at absicca x
+    """
+
+    ders = lagrange_derivatives( xi, yi )
+
+    deriv = lambda x : sum( map( lambda d : d(x), ders ) )
+
+    return deriv
+
 def GLquad( f, n, bounds=[-1, 1] ):
     """
     returns the Gauss Legendre quadrature with n points for function f(x) and bounds[lower, upper]
@@ -96,12 +137,12 @@ def g1D( xL, xR ):
     return a lambda function which maps from X E [-1,1] -> x E [xL,xR]
     """
     dx = xR - xL
-    return lambda X : 0.5*(X+1)*dx + xL
+    return lambda X : 0.5*(X+1.0)*dx + xL
 
 def G1D( xL, xR ):
     """
     return a lambda function which maps from x E [xL,xR] -> X E [-1,1]
     """
     dx = xR - xL
-    return lambda x : 1 + 2*(x - xL)/dx
+    return lambda x : 2.0*(x-xL)/dx - 1.0
 
