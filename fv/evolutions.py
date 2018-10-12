@@ -7,14 +7,14 @@ Each function takes arrays of left and right values of advection velocity and ad
 
 import numpy as np
 
-def upwind1( qL, qR, vL, vR, dx, h ):
+def upwind1( qL, qR, vL, vR, ):
     """
     returns face flux calculated from upwind value on face
     """
 
     flux = np.zeros_like( qL )
 
-    direction = np.sign( vL + 0.5*(vR - vL)*h[:-1]/dx ).astype( int )
+    direction = np.sign( vL + vR ).astype( int )
 
     mask = direction ==  1
     flux[ mask ] = qL[ mask ] * vL[ mask ]

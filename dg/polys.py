@@ -43,6 +43,48 @@ class Legendre( object ):
         """
         return self.zeros[ n ][ k ], self.weights[ n ][ k ]
 
+class Lagrange( object ):
+    def interpolate( self, x, y ):
+        self.x = x
+        self.y = y
+        self.order = len( x )
+        self.d = np.zeros( self.order )
+        self.f = np.zeros( [self.order, self.order] )
+
+        for j in range( self.order ):
+            self.d[j] = np.prod( np.delete( self.x[j] - self.x, j ) )
+            self.d[j] = 1 / self.d[j]
+
+            for i in np.delete( range( self.order ), j ):
+                self.f[j, i] = np.prod( np.delete( self.x[j] - self.x, [i, j] ) )
+                self.f[j, i] =     self.f[j, i] * ( x[j] - x[i] )
+                self.f[j, i] = 1 / self.f[j, i]
+
+        return
+
+    def ljx( self, j, z ):
+        p = np.prod( z - np.delete( self.x, j ) )
+
+        return self.y[j] * self.d[j] * p
+
+    def dljx( self, j, z):
+        p0 = 0.0
+        for i in np.delete( range( self.order ), j ):
+            p1  = np.prod( np.delete( z - self.x, [i, j] ) )
+            p1 *= self.f[j, i]
+            p0 += p1
+
+        return self.y[j] * p0
+
+    def yi( self, z ):
+        p = map( lambda j : self.ljx( j, z), range( self.order ) )
+        return sum( p )
+
+    def dyi( self, z):
+        p = map( lambda j : self.dljx( j, z), range( self.order ) )
+        return sum( p )
+
+
 def lagrange_polynomial( x, y, j ):
     """
     return a function which is the jth lagrange interpolating polynomial for data y at absicca x

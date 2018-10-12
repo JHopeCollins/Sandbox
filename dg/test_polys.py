@@ -7,6 +7,10 @@ Test suite for polys.py
 import numpy as np
 import polys
 
+def runge( x ): return 1 / ( 1 + 25*x*x )
+
+eps = 0.00000000000001
+
 class Test_Legendre( object ):
     def test_weights( self ):
         L = polys.Legendre()
@@ -35,8 +39,89 @@ class Test_Legendre( object ):
 
         assert L.GL_quad_0w(4,3) == ( L.zeros[4][3], L.weights[4][3] )
 
+class Test_Lagrange( object ):
+    def test_interpolate( self ):
+        x = np.linspace( -1, 1, 11 )
+        y = runge( x )
 
-def runge( x ): return 1 / ( 1 + 25*x*x )
+        L = polys.Lagrange()
+        L.interpolate( x, y )
+
+        assert np.all( L.x == x )
+        assert np.all( L.y == y )
+
+        assert len( L.d == len( x ) )
+
+        assert L.d[2] == 1 / np.prod( np.delete( x[2] - x, 2 ) )
+
+        return
+
+    def test_ljx( self ):
+        x = np.linspace( -1, 1, 11 )
+        y = runge( x )
+
+        L = polys.Lagrange()
+        L.interpolate( x, y )
+
+        for j in range( len ( x ) ):
+
+            yi = map( lambda z : L.ljx( j, z ), x )
+
+            assert np.isclose( yi[j], y[j] )
+
+            assert np.all( np.delete( yi, j ) == 0 )
+
+        return
+
+    def test_dljx( self ):
+        x = np.linspace( -1, 1, 11 )
+        y = runge( x )
+
+        L = polys.Lagrange()
+        L.interpolate( x, y )
+
+        for j in range( len( x ) ):
+
+            dy  = np.asarray( map( lambda z : L.dljx( j, z ), x ) )
+
+            dyt = np.asarray( map( lambda z : ( L.ljx(j,z+eps) - L.ljx(j,z-eps) )/( 2*eps ), x ) )
+
+            err = np.abs( [ (dy[k]-dyt[k])/dyt[k] for k in range(len(x)) if dy[k]>eps*1000 ] )
+            assert np.all( err  < 0.025 )
+
+        return
+
+    def test_yi( self ):
+        x = np.linspace( -1, 1, 11 )
+        y = runge( x )
+
+        L = polys.Lagrange()
+        L.interpolate( x, y )
+
+        yi = map( lambda z : L.yi( z ), x )
+
+        assert np.all( np.isclose( yi, y ) )
+
+        assert L.yi( 0.7 ) + 0.226 < 0.001
+
+        return
+
+    def test_dyi( self ):
+        x = np.linspace( -1, 1, 11 )
+        y = runge( x )
+
+        L = polys.Lagrange()
+        L.interpolate( x, y )
+
+        for j in range( len( x ) ):
+
+            d = L.dyi( x[j] )
+
+            dt = sum( map( lambda k : L.dljx( k, x[j] ), range( len( x ) ) ) )
+
+            assert d == dt
+
+        return
 
 def test_lagrange_polynomial( ):
     x = np.linspace( -1, 1, 11 )
@@ -86,8 +171,6 @@ def test_lagrange_interpolator( ):
 
     return
 
-eps = 0.00000000000001
-
 def test_lagrange_derivative( ):
     x = np.linspace( -1, 1, 11 )
 
@@ -98,7 +181,7 @@ def test_lagrange_derivative( ):
         dy  = np.asarray( map( lambda xj : der(xj), x ) )
         dyt = np.asarray( map( lambda xj : ( l(xj+eps) - l(xj-eps) )/( 2*eps ), x ) )
 
-        err = np.abs( [ (dy[j]-dyt[j])/dyt[j] for j in range(len(x)) if dy[i]>eps*1000 ] )
+        err = np.abs( [ (dy[j]-dyt[j])/dyt[j] for j in range(len(x)) if dy[j]>eps*1000 ] )
         assert np.all( err  < 0.025 )
 
     return
@@ -143,7 +226,6 @@ def test_GLquad( ):
     return
 
 def test_g1D( ):
-
     g = polys.g1D( -2, 2 )
 
     assert np.isclose( g( -0.5 ), -1  )
@@ -162,7 +244,6 @@ def test_g1D( ):
     return
 
 def test_G1D( ):
-
     G = polys.G1D( -2, 2 )
 
     assert np.isclose( G( -1  ), -0.5 )
