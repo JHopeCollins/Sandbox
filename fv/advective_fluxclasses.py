@@ -64,9 +64,7 @@ class REAFlux1D( AdvectiveFlux1D ):
         flux = self.evolve( qL,
                             qR,
                             vL,
-                            vR,
-                            dx[r:-r],
-                            h [r:-r] )
+                            vR)
 
         return flux
 

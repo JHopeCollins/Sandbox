@@ -73,6 +73,7 @@ class Field1D( object ):
         """
         self.name   = name
         self.mesh   = mesh
+        self.p      = mesh.p
         self.bconds = []
         self.val    = np.zeros_like( self.mesh.xp )
         return

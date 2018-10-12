@@ -11,7 +11,7 @@ from dg import fields
 from fv import evolutions
 from fv import ODEintegrators
 
-nh = 5
+nh = 10
 p  = 6
 
 T  = 10

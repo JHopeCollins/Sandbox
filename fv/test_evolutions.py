@@ -18,7 +18,7 @@ def test_upwind1( ):
     h  = np.asarray( [ 1,  1,  1,  1, 1] )
     dx = 1
 
-    f = ev.upwind1( qL, qR, vL, vR, dx, h )
+    f = ev.upwind1( qL, qR, vL, vR )
 
     assert np.all( f == [ 1, -24, -26, 4 ] )
 
