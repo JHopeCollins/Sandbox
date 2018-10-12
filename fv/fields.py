@@ -1,7 +1,7 @@
 """
 Written by: J Hope-Collins (jth39@cam.ac.uk)
 
-Field class for 1D scalar fields
+Domain and Field classes for 1D scalar fields for Finite Volume solver
 """
 
 import numpy as np
@@ -9,9 +9,9 @@ import maths_utils as mth
 import timeseries_plotting as tsp
 
 
-class Domain ( object ):
+class Domain( object ):
     """
-        Domain of a field
+        Domain of a finite volume field
 
         has attributes for location and spacing of mesh points
     """
@@ -49,7 +49,7 @@ class BoundaryCondition( object ):
 
 class Field1D( object ):
     """
-        Class for 1D scalar fields
+        Class for 1D finite volume scalar fields
 
         field consists of array of value of the field, and list of boundary conditions
     """
@@ -221,4 +221,5 @@ class UnsteadyField1D( Field1D ):
 
     def plot_history( self ):
         tsp.view_timeseries1D( self )
+
 

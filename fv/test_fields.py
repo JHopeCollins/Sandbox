@@ -270,7 +270,7 @@ class Test_UnsteadyField1D( object ):
     def test_init( self ):
         mesh = np.linspace( 0, 1.0, 11 )
         d = fields.Domain( mesh )
-        f = fields.UnsteadyField1D( 'x', d )
+        f = fields.UnsteadyField1D( 'q', d )
 
         assert f.dt == None
         assert f.nt == 0
@@ -336,6 +336,7 @@ class Test_UnsteadyField1D( object ):
         f.update( update )
 
         assert np.all( f.history[-1,:] == f.val_noghost )
+        assert f.t == 0.1
 
         return
 

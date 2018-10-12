@@ -1,0 +1,12 @@
+
+plotting
+   how many points per nth order cell for proper representation?
+   plot separate lines for each cell to show discontinuity
+
+make function for dg faceflux
+
+field class needs to know basis order?
+
+class for flux term
+   needs initialising to calculate stiffness matrix
+   needs .apply equivalent which returns the c*K*q - fn

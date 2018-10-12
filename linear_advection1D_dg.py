@@ -1,4 +1,8 @@
+"""
+Written by: J Hope-Collins ( joshua.hope-collins@eng.ox.ac.uk )
 
+procedural script for first try at dg for linear advection wave
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 from dg import polys
@@ -25,7 +29,7 @@ def RK4( dt, q, L ):
 # p refers to nodal data
 
 nh  = 20        # number of cells
-p   = 7         # order of approximation
+p   = 3         # order of approximation
 L   = 2*np.pi   # domain length
 T   = 0.2       # time duration (# of periods)
 c   = 1         # advection velocity

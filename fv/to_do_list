@@ -40,6 +40,9 @@ URGENT---------------------URGENT
 
 MEDIUM-TERM----------------MEDIUM-TERM
 
+plotting
+   plot separate lines for each cell to show discontinuity
+
 Flux.periodic bc method
    bodge for periodifying dx array is not nice code, difficult to read
       maybe write mth.periodify_diff_array functions for doing this for inter-cell values?
