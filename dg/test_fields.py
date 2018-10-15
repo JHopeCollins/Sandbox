@@ -8,21 +8,19 @@ import numpy as np
 import fields
 import polys
 
+
 class Test_Domain( object ):
     def test_init( self ):
         mesh = np.linspace( -1.0, 1.0, 11 )
         d = fields.Domain( xh=mesh )
 
-        assert np.all( d.xh ==          mesh )
-        assert np.all( d.dx == np.diff( mesh ) )
-        assert d.nh == 10
-        assert np.all( d.dg == 0.5*d.dx )
+        assert np.all( d.dg == 0.5*d.dxh )
 
         return
 
     def test_set_expansion( self ):
         mesh = np.linspace( -1.0, 1.0, 11 )
-        d = fields.Domain( xh=mesh )
+        d = fields.Domain( mesh )
         o = 3
 
         d.set_expansion( order=o )
@@ -36,7 +34,7 @@ class Test_Domain( object ):
         assert d.xp[-1] ==  1.0 - ( 1.0 - polys.Legendre.zeros[o][-1] )*0.1
 
         assert len( d.dg ) == len( mesh ) -1
-        assert d.dg[2] == 0.5*d.dx[2]
+        assert d.dg[2] == 0.5*d.dxh[2]
 
         assert len( d.Lm1 ) == ( len( mesh ) -1 ) * o
         assert len( d.Lp1 ) == ( len( mesh ) -1 ) * o
@@ -50,6 +48,7 @@ class Test_Domain( object ):
         assert len( d.M ) == d.p*d.nh
 
         return
+
 
 class Test_Field1D( object ):
     def test_init( self ):

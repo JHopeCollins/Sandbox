@@ -5,10 +5,14 @@ Domain and Field classes for 1D scalar fields for Discontinuous Galerkin solver
 """
 
 import numpy as np
+
 import polys
 import timeseries_plotting as tsp
+# from sandbox import general
+import sandbox.general as general
 
-class Domain( object ):
+
+class Domain( general.fields.Domain ):
     """
         Domain for a discontinuous galerkin field
 
@@ -18,10 +22,8 @@ class Domain( object ):
         """
         initialise Domain with cell vertices and sizes
         """
-        self.xh = xh                    # cell vertex points
-        self.dx = np.diff( self.xh )    # cell size
-        self.nh = len(     self.dx )    # number of cells
-        self.dg = 0.5*self.dx           # cell jacobian
+        super( self.__class__, self ).__init__( xh )
+        self.dg = 0.5*self.dxh           # cell jacobian
         return
 
     def set_expansion( self, order ):
