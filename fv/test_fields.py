@@ -14,28 +14,15 @@ class Test_Domain( object ):
         mesh = np.linspace( 0, 1.0, 11 )
         d = fields.Domain( mesh )
 
-        assert np.all( d.x  ==          mesh   )
-        assert np.all( d.dx == np.diff( mesh ) )
+        assert np.all( d.xp_wg == ( d.xh_wg[:-1] + d.xh_wg[1:] )*0.5 )
+        assert np.all( d.dxp_wg == np.diff( d.xp_wg ) )
 
-        assert np.all( d.x_noghost  == d.x[ 1:-1] )
-        assert np.all( d.dx_noghost == d.dx[1:-1] )
-
-        return
-
-    def test_set_x( self ):
-        mesh  = np.linspace(   0, 1.0, 11 )
-        mesh2 = np.linspace( 1.0, 2.0, 11 )
-        d = fields.Domain( mesh )
-        d.set_x( mesh2 )
-
-        assert np.all( d.x  ==          mesh2   )
-        assert np.all( d.dx == np.diff( mesh2 ) )
-
-        assert np.all( d.x_noghost  == d.x[ 1:-1] )
-        assert np.all( d.dx_noghost == d.dx[1:-1] )
+        assert np.all( d.xh  == d.xh_wg[ 1:-1] )
+        assert np.all( d.dxh == d.dxh_wg[1:-1] )
+        assert np.all( d.xp  == d.xp_wg[ 1:-1] )
+        assert np.all( d.dxp == d.dxp_wg[1:-1] )
 
         return
-
 
 class Test_BoundaryCondition( object ):
     def test_init( self ):
@@ -65,9 +52,9 @@ class Test_Field1D( object ):
 
         assert f.name == 'x'
         assert f.mesh == d
-        assert len( f.val ) == len( f.mesh.x )
+        assert len( f.val ) == len( f.mesh.xp )
         assert np.all( f.val == 0 )
-        assert np.all( f.val_noghost == f.val[1:-1] )
+        assert np.all( f.val== f.val_wg[1:-1] )
         assert f.bconds == []
 
         return
@@ -77,12 +64,12 @@ class Test_Field1D( object ):
         d = fields.Domain( mesh )
         f = fields.Field1D( 'x', d )
 
-        data = np.asarray( range( len( f.val_noghost ) ) )
+        data = np.asarray( range( len( f.val ) ) )
         f.set_field( data )
 
-        assert np.all( f.val_noghost == data )
-        assert f.val[ 0] == 0
-        assert f.val[-1] == 0
+        assert np.all( f.val== data )
+        assert f.val_wg[ 0] == 0
+        assert f.val_wg[-1] == 0
 
         return
 
@@ -91,7 +78,7 @@ class Test_Field1D( object ):
         d = fields.Domain( mesh )
         f = fields.Field1D( 'x', d )
 
-        data = np.asarray( range( len( f.val_noghost ) ) )
+        data = np.asarray( range( len( f.val) ) )
         f.set_field( data )
 
         bcp = fields.BoundaryCondition( name='periodic' )
@@ -112,16 +99,16 @@ class Test_Field1D( object ):
         d = fields.Domain( mesh )
         f = fields.Field1D( 'x', d )
 
-        data = np.asarray( range( len( f.val_noghost ) ) )
+        data = np.asarray( range( len( f.val) ) )
         f.set_field( data )
 
         update = data[:]
 
         f.update( update )
 
-        assert np.all( f.val_noghost == 2*data )
-        assert f.val[ 0] == 0
-        assert f.val[-1] == 0
+        assert np.all( f.val== 2*data )
+        assert f.val_wg[ 0] == 0
+        assert f.val_wg[-1] == 0
 
         return
 
@@ -130,14 +117,14 @@ class Test_Field1D( object ):
         d = fields.Domain( mesh )
         f = fields.Field1D( 'x', d )
 
-        data = np.asarray( range( len( f.val_noghost ) ) )
+        data = np.asarray( range( len( f.val ) ) )
         f.set_field( data )
 
         bcp = fields.BoundaryCondition( name='periodic' )
 
         f.periodic( bcp )
-        assert f.val[ 0] == f.val[-2]
-        assert f.val[-1] == f.val[ 1]
+        assert f.val_wg[ 0] == f.val[-1]
+        assert f.val_wg[-1] == f.val[ 0]
 
         return
 
@@ -146,7 +133,7 @@ class Test_Field1D( object ):
         d = fields.Domain( mesh )
         f = fields.Field1D( 'x', d )
 
-        data = np.asarray( range( len( f.val_noghost ) ) )
+        data = np.asarray( range( len( f.val ) ) )
         f.set_field( data )
 
         bcd0  = fields.BoundaryCondition( name='dirichlet', indx=0,  val=0 )
@@ -154,8 +141,8 @@ class Test_Field1D( object ):
 
         f.dirichlet( bcd0  )
         f.dirichlet( bcdm1  )
-        assert f.val[ 0] ==  0
-        assert f.val[-1] == -9
+        assert f.val_wg[ 0] ==  0
+        assert f.val_wg[-1] == -10
 
         return
 
@@ -164,7 +151,7 @@ class Test_Field1D( object ):
         d = fields.Domain( mesh )
         f = fields.Field1D( 'x', d )
 
-        data = np.asarray( range( len( f.val_noghost ) ) )
+        data = np.asarray( range( len( f.val ) ) )
         f.set_field( data )
 
         bcn0  = fields.BoundaryCondition( name='neumann',  indx=0,  val=1 )
@@ -172,8 +159,8 @@ class Test_Field1D( object ):
 
         f.neumann( bcn0  )
         f.neumann( bcnm1 )
-        assert f.val[ 0] == -0.1
-        assert f.val[-1] ==  9.1
+        assert f.val_wg[ 0] == -0.1
+        assert f.val_wg[-1] == 10.1
 
         return
 
@@ -245,23 +232,23 @@ class Test_Field1D( object ):
         d = fields.Domain( mesh )
         f = fields.Field1D( 'x', d )
 
-        data = np.asarray( range( len( f.val_noghost ) ) ) + 1
+        data = np.asarray( range( len( f.val ) ) ) + 1
         f.set_field( data )
 
         bcp = fields.BoundaryCondition( name='periodic' )
         f.bconds.append( bcp )
         f.update_ghosts(     )
 
-        assert f.val[ 0] == f.val[-2]
-        assert f.val[-1] == f.val[ 1]
+        assert f.val_wg[ 0] == f.val[-1]
+        assert f.val_wg[-1] == f.val[ 0]
 
         bcd0  = fields.BoundaryCondition( name='dirichlet', indx=0,  val=0 )
         bcdm1 = fields.BoundaryCondition( name='dirichlet', indx=-1, val=0 )
         f.add_boundary_condition( bcd0  )
         f.add_boundary_condition( bcdm1 )
 
-        assert f.val[ 0] ==  -1
-        assert f.val[-1] == -10
+        assert f.val_wg[ 0] ==  -1
+        assert f.val_wg[-1] == -11
 
         return
 
@@ -276,7 +263,7 @@ class Test_UnsteadyField1D( object ):
         assert f.nt == 0
         assert f.t  == 0
         assert f.save_interval == 1
-        assert np.all( f.history == np.zeros( (1, len( f.val_noghost ) ) ) )
+        assert np.all( f.history == np.zeros( (1, len( f.val ) ) ) )
 
         return
 
@@ -285,10 +272,10 @@ class Test_UnsteadyField1D( object ):
         d = fields.Domain( mesh )
         f = fields.UnsteadyField1D( 'x', d )
 
-        data = np.asarray( range( len( f.val_noghost ) ) )
+        data = np.asarray( range( len( f.val ) ) )
         f.set_field( data )
 
-        assert np.all( f.history[:] == f.val_noghost[:] )
+        assert np.all( f.history[:] == f.val[:] )
 
         return
 
@@ -327,7 +314,7 @@ class Test_UnsteadyField1D( object ):
 
         d = fields.Domain( mesh )
         f = fields.UnsteadyField1D( 'x', d )
-        data = np.asarray( range( len( f.val_noghost ) ) )
+        data = np.asarray( range( len( f.val ) ) )
 
         f.set_field( data )
         f.set_timestep( 0.1 )
@@ -335,7 +322,7 @@ class Test_UnsteadyField1D( object ):
         update = data[:]
         f.update( update )
 
-        assert np.all( f.history[-1,:] == f.val_noghost )
+        assert np.all( f.history[-1,:] == f.val[:] )
         assert f.t == 0.1
 
         return

@@ -8,7 +8,6 @@ import numpy as np
 
 import polys
 import timeseries_plotting as tsp
-# from sandbox import general
 import sandbox.general as general
 
 

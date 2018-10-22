@@ -35,9 +35,9 @@ class Test_Flux1D( object ):
 
         args = f.arg_list( q )
         assert len(args) == 3
-        assert q.val is args[0]
-        assert x.dx  is args[1]
-        assert x.h   is args[2]
+        assert q.val_wg is args[0]
+        assert x.dxp    is args[1]
+        assert x.dxh    is args[2]
 
         return
 
@@ -51,8 +51,8 @@ class Test_Flux1D( object ):
 
         flux = f.flux_calculation( f.arg_list( q ) )
 
-        assert len(flux) == len(q.val) - 1 - 2*f.stencil_radius
-        assert np.all( flux == np.asarray( range( len( q.val ) -3 ) ) +1 )
+        assert len(flux) == len(q.val_wg) - 1 - 2*f.stencil_radius
+        assert np.all( flux == np.asarray( range( len( q.val_wg ) -3 ) ) +1 )
 
         return
 
@@ -67,11 +67,11 @@ class Test_Flux1D( object ):
         bcp = fields.BoundaryCondition( 'periodic' )
         q.add_boundary_condition( bcp )
 
-        flux = np.zeros( len( q.val ) -1 )
+        flux = np.zeros( len( q.val_wg ) -1 )
 
         f.periodic( bcp, flux, f.arg_list( q ) )
 
-        assert len( flux ) == len( q.val ) -1
+        assert len( flux ) == len( q.val_wg ) -1
         assert np.all( flux[r:-r] == 0 )
         assert flux[ 0] == flux[-1]
         assert flux[ 0] == 1
@@ -90,7 +90,7 @@ class Test_Flux1D( object ):
         fmiddle = f.flux_calculation( f.arg_list( q ) )
         flux    = f.apply( q )
 
-        assert len( flux ) == len( q.val_noghost ) + 1
+        assert len( flux ) == len( q.val ) + 1
         assert np.all( flux[r:-r] == fmiddle )
         assert flux[ 0] == 0
         assert flux[-1] == 0
@@ -99,7 +99,7 @@ class Test_Flux1D( object ):
         q.add_boundary_condition( bcp )
 
         flux = f.apply( q )
-        assert len( flux ) == len( q.val_noghost ) + 1
+        assert len( flux ) == len( q.val ) + 1
         assert np.all( flux[r:-r] == fmiddle )
         assert flux[ 0] == flux[-1]
         assert flux[ 0] == 1

@@ -26,10 +26,10 @@ class AdvectiveFlux1D( flc.Flux1D ):
         return the argument list for flux_calculation() method
         """
         args = []
-        args.append( q.val )
-        args.append( self.mesh.dx )
-        args.append( self.mesh.h  )
-        args.append( self.vel.val )
+        args.append( q.val_wg )
+        args.append( self.mesh.dxp_wg )
+        args.append( self.mesh.dxh_wg )
+        args.append( self.vel.val_wg )
         return args
 
 
@@ -53,13 +53,13 @@ class REAFlux1D( AdvectiveFlux1D ):
 
     def flux_calculation( self, args ):
         r = self.stencil_radius
-        q  = args[0]
-        dx = args[1]
-        h  = args[2]
-        v  = args[3]
+        q   = args[0]
+        dxp = args[1]
+        dxh = args[2]
+        v   = args[3]
 
-        qL, qR = self.reconstruct( q[1:-1], dx[1:-1], h[1:-1] )
-        vL, vR = self.reconstruct( v[1:-1], dx[1:-1], h[1:-1] )
+        qL, qR = self.reconstruct( q[1:-1], dxp[1:-1], dxh[1:-1] )
+        vL, vR = self.reconstruct( v[1:-1], dxp[1:-1], dxh[1:-1] )
 
         flux = self.evolve( qL,
                             qR,

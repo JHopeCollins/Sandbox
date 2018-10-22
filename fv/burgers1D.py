@@ -23,7 +23,7 @@ import evolutions as ev
 ufunc = mth.BurgersWave1D()
 
 #set up problem
-nx = 201+2
+nx = 201
 nt = 1600
 L  = 2.*np.pi
 dx = L/(nx-1)
@@ -31,7 +31,7 @@ nu = 0.17
 dt = 0.001
 t  = 0
 
-x  = np.linspace(-dx/2.0, L + dx/2.0, nx)
+x  = np.linspace(0, L, nx)
 x  = fields.Domain( x )
 u  = fields.UnsteadyField1D( 'u', x )
 u.set_boundary_condition( name='periodic' )
@@ -39,7 +39,7 @@ u.set_timestep( dt )
 u.set_save_interval( nt=5 )
 
 #set initial solution
-u_0 = np.asarray([ufunc(t, x0, nu) for x0 in x.x_noghost])
+u_0 = np.asarray([ufunc(t, x0, nu) for x0 in x.xp])
 
 u.set_field( u_0 )
 
@@ -53,7 +53,7 @@ print('Pe   =', max(u_0)*dx/nu)
 
 fluxi = afc.REAFlux1D()
 fluxi.set_mesh( x )
-fluxi.set_reconstruction( rc.minmod2 )
+fluxi.set_reconstruction( rc.MC2 )
 fluxi.set_reconstruction_radius( 2 )
 fluxi.set_evolution( ev.upwind1 )
 fluxi.set_advection_velocity( u )
@@ -72,10 +72,5 @@ bgrs.set_time_integration( ODEintegrators.EulerForward1 )
 for n in range(nt):
     bgrs.step( dt )
 
-u_exact = np.asarray( [ ufunc( nt*dt, xi, nu ) for xi in x.x_noghost ] )
-
 u.plot_history()
-
-# fig1, ax1 = mth.plot1Dsolution( x.x_noghost, u.val_noghost, u_0=u_0, u_e=u_exact )
-# fig1.show()
 

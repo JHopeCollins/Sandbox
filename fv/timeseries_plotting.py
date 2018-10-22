@@ -39,7 +39,7 @@ def view_timeseries1D( field ):
     fig, ax = plt.subplots()
     ax.idx = 0
     ax.field = field
-    ax.plot( field.mesh.x[1:-1], field.history[0,:] )
+    ax.plot( field.mesh.xp, field.history[0,:] )
     fig.show()
 
     fig.canvas.mpl_connect(    'scroll_event', process_scroll )

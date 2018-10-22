@@ -5,29 +5,39 @@ Domain and Field classes for 1D scalar fields for Finite Volume solver
 """
 
 import numpy as np
+
 import maths_utils as mth
 import timeseries_plotting as tsp
+from sandbox import general
 
 
-class Domain( object ):
+class Domain( general.fields.Domain ):
     """
         Domain of a finite volume field
 
         has attributes for location and spacing of mesh points
     """
-    def __init__( self, x ):
-        self.set_x( x )
-        return
+    def __init__( self, mesh ):
+        """
+        initialise with cell size, and centre and vertex location, and number of cells
+        """
+        super( self.__class__, self ).__init__( mesh )
 
-    def set_x( self, x ):
-        self.x  = x.copy()
-        self.dx = np.diff( x )
-        self.h  = ( self.dx[:-1] + self.dx[1:] )/2.0
+        self.xh_wg = np.append( self.xh, self.xh[-1] + self.dxh[-1] )
+        self.xh_wg = np.append( self.xh[0] - self.dxh[0], self.xh_wg )
 
-        self.h = np.append( np.append( self.h[0], self.h ), self.h[1] )
+        self.dxh_wg = np.append( self.dxh, self.dxh[-1] )
+        self.dxh_wg = np.append( self.dxh[0], self.dxh_wg )
 
-        self.x_noghost  = self.x[ 1:-1]
-        self.dx_noghost = self.dx[1:-1]
+        self.xp_wg = 0.5*( self.xh_wg[:-1] + self.xh_wg[1:] )
+
+        self.dxp_wg = np.diff( self.xp_wg )
+
+        self.xp  = self.xp_wg[1:-1]
+        self.xh  = self.xh_wg[1:-1]
+        self.dxh = self.dxh_wg[1:-1]
+        self.dxp = self.dxp_wg[1:-1]
+
         return
 
 
@@ -57,25 +67,25 @@ class Field1D( object ):
     def __init__( self, name, mesh ):
         self.name   = name
         self.mesh   = mesh
-        self.val    = np.zeros_like(self.mesh.x)
-        self.val_noghost = self.val[1:-1]
+        self.val_wg = np.zeros_like(self.mesh.xp_wg)
+        self.val    = self.val_wg[1:-1]
         self.bconds = []
         return
 
     def set_field( self, data ):
-        self.val_noghost[:] = data[:]
+        self.val[:] = data[:]
         self.update_ghosts()
         return
 
     def copy( self ):
         g = Field1D( self.name, self.mesh )
-        g.set_field( self.val_noghost )
+        g.set_field( self.val)
         for bc in self.bconds:
             g.add_boundary_condition( bc )
         return g
 
     def update( self, dvar ):
-        self.val_noghost[:] += dvar[:]
+        self.val[:] += dvar[:]
         self.update_ghosts()
         return
 
@@ -141,8 +151,8 @@ class Field1D( object ):
         """
         set ghose cell values for periodic boundary condition
         """
-        self.val[ 0] = self.val[-2]
-        self.val[-1] = self.val[ 1]
+        self.val_wg[ 0] = self.val[-1]
+        self.val_wg[-1] = self.val[ 0]
         return
 
     def dirichlet( self, bc ):
@@ -152,9 +162,9 @@ class Field1D( object ):
         ghost = bc.indx
         in1 = mth.step_into_array( bc.indx, 1 )
 
-        diff  = self.val[in1] - bc.val
+        diff  = self.val_wg[in1] - bc.val
 
-        self.val[ghost] = bc.val - diff
+        self.val_wg[ghost] = bc.val - diff
         return
 
     def neumann( self, bc ):
@@ -166,9 +176,9 @@ class Field1D( object ):
         ghost = bc.indx
         in1 = mth.step_into_array( bc.indx, 1 )
 
-        dx = self.mesh.dx[ghost]
+        dx = self.mesh.dxp_wg[ghost]
 
-        self.val[ghost] = self.val[in1] - dn*bc.val*dx
+        self.val_wg[ghost] = self.val_wg[in1] - dn*bc.val*dx
         return
 
 
@@ -184,12 +194,12 @@ class UnsteadyField1D( Field1D ):
         self.nt = 0
         self.t  = 0
         self.save_interval = 1
-        self.history = np.zeros( (1, len( self.val_noghost ) ) )
+        self.history = np.zeros( (1, len( self.val ) ) )
         return
 
     def set_field( self, data ):
         super(  self.__class__, self ).set_field( data )
-        self.history[:] = self.val_noghost[:]
+        self.history[:] = self.val[:]
 
     def set_timestep( self, dt ):
         self.dt = dt
@@ -215,7 +225,7 @@ class UnsteadyField1D( Field1D ):
         self.t += self.dt
 
         if self.nt % self.save_interval == 0:
-            self.history = np.append( self.history, [self.val_noghost], axis=0 )
+            self.history = np.append( self.history, [ self.val[:] ], axis=0 )
 
         return
 

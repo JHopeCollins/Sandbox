@@ -23,7 +23,7 @@ class Test_Equation( object ):
         x = fields.Domain( mesh )
 
         q = fields.Field1D( 'q', x )
-        q.set_field( np.ones( 9 ) )
+        q.set_field( np.ones( 10 ) )
 
         eq = equationclass.Equation()
         eq.set_variable( q )
@@ -62,10 +62,10 @@ class Test_Equation( object ):
         x = fields.Domain( mesh )
 
         c = fields.Field1D( 'c', x )
-        c.set_field( np.ones( 9 ) )
+        c.set_field( np.ones( 10 ) )
 
         q = fields.Field1D( 'q', x )
-        q.set_field( np.zeros( 9 ) )
+        q.set_field( np.zeros( 10 ) )
 
         fa = afx.AdvectiveFlux1D()
         fa.set_mesh( x )
@@ -82,7 +82,7 @@ class Test_Equation( object ):
         dq = eq.spatial_operator( q )
 
         dq_test = fa.apply( q ) + fd.apply( q )
-        dq_test = np.diff( dq_test )/ x.h[1:-1]
+        dq_test = np.diff( dq_test )/ x.dxh
 
         assert np.all( dq == dq_test )
 
@@ -93,10 +93,10 @@ class Test_Equation( object ):
         x = fields.Domain( mesh )
 
         c = fields.Field1D( 'c', x )
-        c.set_field( np.ones( 9 ) )
+        c.set_field( np.ones( 10 ) )
 
         q = fields.Field1D( 'q', x )
-        q.set_field( np.zeros( 9 ) )
+        q.set_field( np.zeros( 10 ) )
 
         fa = afx.AdvectiveFlux1D()
         fa.set_mesh( x )
