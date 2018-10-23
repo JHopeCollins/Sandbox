@@ -21,7 +21,7 @@ class Domain( general.fields.Domain ):
         """
         initialise Domain with cell vertices and sizes
         """
-        super( self.__class__, self ).__init__( xh )
+        super( Domain, self ).__init__( xh )
         self.dg = 0.5*self.dxh           # cell jacobian
         return
 
@@ -112,7 +112,7 @@ class UnsteadyField1D( Field1D ):
         same as Field1D, but value of field is saved at predetermined intervals in time
     """
     def __init__( self, name, mesh ):
-        super( self.__class__, self ).__init__( name, mesh )
+        super( UnsteadyField1D, self ).__init__( name, mesh )
         self.dt = None
         self.nt = 0
         self.t  = 0
@@ -124,7 +124,7 @@ class UnsteadyField1D( Field1D ):
         """
         set the value of the field and start recording history
         """
-        super(  self.__class__, self ).set_field( data )
+        super( UnsteadyField1D, self ).set_field( data )
         self.history[:] = self.val[:]
         return
 
@@ -151,7 +151,7 @@ class UnsteadyField1D( Field1D ):
         """
         update nodal value and save periodically save history
         """
-        super( self.__class__, self ).update( dvar )
+        super( UnsteadyField1D, self ).update( dvar )
 
         self.nt+=1
         self.t += self.dt

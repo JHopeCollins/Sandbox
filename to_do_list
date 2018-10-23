@@ -1,8 +1,13 @@
 
 look at how to combine:
-   fv/dg Field & UnsteadyField
+   fv/dg UnsteadyField
    fv/dg timeseries_plotting
    fv/dg equation class
+
+look at multiple inheritance
+   eg for fv.fields.UnsteadyField1D inheriting from:
+      fv.fields.Field1D
+      general.fields.UnsteadyField1D
 
 move ODEintegrators and evolutions from fv to top folder
 

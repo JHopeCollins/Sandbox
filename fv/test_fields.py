@@ -7,6 +7,7 @@ Includes tests for Domain, Boundary Condition and Field1D classes
 
 import numpy as np
 import fields
+from sandbox import general
 
 
 class Test_Domain( object ):
@@ -24,25 +25,6 @@ class Test_Domain( object ):
 
         return
 
-class Test_BoundaryCondition( object ):
-    def test_init( self ):
-        bc = fields.BoundaryCondition( )
-        assert bc.name == None
-        assert bc.indx == None
-        assert bc.val  == None
-
-        bc = fields.BoundaryCondition( name='periodic' )
-        assert bc.name == 'periodic'
-        assert bc.indx == None
-        assert bc.val  == None
-
-        bc = fields.BoundaryCondition( name='periodic', indx=0, val=1 )
-        assert bc.name == 'periodic'
-        assert bc.indx == 0
-        assert bc.val  == 1
-
-        return
-
 
 class Test_Field1D( object ):
     def test_init( self ):
@@ -50,10 +32,7 @@ class Test_Field1D( object ):
         d = fields.Domain( mesh )
         f = fields.Field1D( 'x', d )
 
-        assert f.name == 'x'
-        assert f.mesh == d
-        assert len( f.val ) == len( f.mesh.xp )
-        assert np.all( f.val == 0 )
+        assert len( f.val_wg ) == len( d.xp_wg )
         assert np.all( f.val== f.val_wg[1:-1] )
         assert f.bconds == []
 
@@ -67,7 +46,6 @@ class Test_Field1D( object ):
         data = np.asarray( range( len( f.val ) ) )
         f.set_field( data )
 
-        assert np.all( f.val== data )
         assert f.val_wg[ 0] == 0
         assert f.val_wg[-1] == 0
 
@@ -81,7 +59,7 @@ class Test_Field1D( object ):
         data = np.asarray( range( len( f.val) ) )
         f.set_field( data )
 
-        bcp = fields.BoundaryCondition( name='periodic' )
+        bcp = general.fields.BoundaryCondition( name='periodic' )
         f.add_boundary_condition( bcp )
 
         g = f.copy()
@@ -106,7 +84,6 @@ class Test_Field1D( object ):
 
         f.update( update )
 
-        assert np.all( f.val== 2*data )
         assert f.val_wg[ 0] == 0
         assert f.val_wg[-1] == 0
 
@@ -120,7 +97,7 @@ class Test_Field1D( object ):
         data = np.asarray( range( len( f.val ) ) )
         f.set_field( data )
 
-        bcp = fields.BoundaryCondition( name='periodic' )
+        bcp = general.fields.BoundaryCondition( name='periodic' )
 
         f.periodic( bcp )
         assert f.val_wg[ 0] == f.val[-1]
@@ -136,8 +113,8 @@ class Test_Field1D( object ):
         data = np.asarray( range( len( f.val ) ) )
         f.set_field( data )
 
-        bcd0  = fields.BoundaryCondition( name='dirichlet', indx=0,  val=0 )
-        bcdm1 = fields.BoundaryCondition( name='dirichlet', indx=-1, val=0 )
+        bcd0  = general.fields.BoundaryCondition( name='dirichlet', indx=0,  val=0 )
+        bcdm1 = general.fields.BoundaryCondition( name='dirichlet', indx=-1, val=0 )
 
         f.dirichlet( bcd0  )
         f.dirichlet( bcdm1  )
@@ -154,8 +131,8 @@ class Test_Field1D( object ):
         data = np.asarray( range( len( f.val ) ) )
         f.set_field( data )
 
-        bcn0  = fields.BoundaryCondition( name='neumann',  indx=0,  val=1 )
-        bcnm1 = fields.BoundaryCondition( name='neumann',  indx=-1, val=1 )
+        bcn0  = general.fields.BoundaryCondition( name='neumann',  indx=0,  val=1 )
+        bcnm1 = general.fields.BoundaryCondition( name='neumann',  indx=-1, val=1 )
 
         f.neumann( bcn0  )
         f.neumann( bcnm1 )
@@ -168,62 +145,14 @@ class Test_Field1D( object ):
         mesh = np.linspace( -0.05, 1.05, 12 )
         d = fields.Domain( mesh )
         f = fields.Field1D( 'x', d )
+        data = np.ones_like( d.xp )
+        f.set_field( data )
 
-        bcp = fields.BoundaryCondition( name='periodic' )
-        bcd = fields.BoundaryCondition( name='dirichlet', indx=0, val=0 )
-        bcn = fields.BoundaryCondition( name='neumann',  indx=-1, val=1 )
-
+        bcp = general.fields.BoundaryCondition( name='periodic' )
         f.add_boundary_condition( bcp )
-        assert bcp in f.bconds
-        assert len( f.bconds ) == 1
 
-        f.add_boundary_condition( bcd )
-        assert bcp not in f.bconds
-        assert bcd in f.bconds
-        assert len( f.bconds ) == 1
-
-        f.add_boundary_condition( bcn )
-        assert bcn, bcd in f.bconds
-        assert len( f.bconds ) == 2
-
-        bcn2 = fields.BoundaryCondition( name='neumann',  indx=0, val=1 )
-        f.add_boundary_condition( bcn2 )
-        assert bcd not in f.bconds
-        assert bcn2    in f.bconds
-
-        f.add_boundary_condition( bcp )
-        assert bcn, bcn2 not in f.bconds
-        assert bcp           in f.bconds
-
-        bcn.indx=None
-        f.add_boundary_condition( bcn )
-        assert bcn not in f.bconds
-        assert bcp     in f.bconds
-
-        bcn.indx=3
-        f.add_boundary_condition( bcn )
-        assert bcn not in f.bconds
-        assert bcp     in f.bconds
-
-        return
-
-    def test_set_boundary_condition( self ):
-        mesh = np.linspace( -0.05, 1.05, 12 )
-        d = fields.Domain( mesh )
-        f = fields.Field1D( 'x', d )
-
-        f.set_boundary_condition( 'periodic' )
-
-        assert type( f.bconds[0] ) == fields.BoundaryCondition
-        assert f.bconds[0].name == 'periodic'
-        assert f.bconds[0].indx == None
-        assert f.bconds[0].val  == None
-
-        f.set_boundary_condition( name='neumann', indx=0, val=1 )
-
-        assert f.bconds[0].name == 'neumann'
-        assert f.bconds[0].indx == 0
-        assert f.bconds[0].val  == 1
+        assert f.val_wg[ 0] == 1
+        assert f.val_wg[-1] == 1
 
         return
 
@@ -235,15 +164,15 @@ class Test_Field1D( object ):
         data = np.asarray( range( len( f.val ) ) ) + 1
         f.set_field( data )
 
-        bcp = fields.BoundaryCondition( name='periodic' )
+        bcp = general.fields.BoundaryCondition( name='periodic' )
         f.bconds.append( bcp )
         f.update_ghosts(     )
 
         assert f.val_wg[ 0] == f.val[-1]
         assert f.val_wg[-1] == f.val[ 0]
 
-        bcd0  = fields.BoundaryCondition( name='dirichlet', indx=0,  val=0 )
-        bcdm1 = fields.BoundaryCondition( name='dirichlet', indx=-1, val=0 )
+        bcd0  = general.fields.BoundaryCondition( name='dirichlet', indx=0,  val=0 )
+        bcdm1 = general.fields.BoundaryCondition( name='dirichlet', indx=-1, val=0 )
         f.add_boundary_condition( bcd0  )
         f.add_boundary_condition( bcdm1 )
 

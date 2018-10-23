@@ -8,6 +8,7 @@ Includes tests for Flux1D class
 import numpy as np
 import fields
 import fluxclass
+from sandbox import general
 
 class Test_Flux1D( object ):
     def test_init( self ):
@@ -64,7 +65,7 @@ class Test_Flux1D( object ):
         f = fluxclass.Flux1D()
         r = f.stencil_radius
         f.set_mesh( x )
-        bcp = fields.BoundaryCondition( 'periodic' )
+        bcp = general.fields.BoundaryCondition( 'periodic' )
         q.add_boundary_condition( bcp )
 
         flux = np.zeros( len( q.val_wg ) -1 )
@@ -95,7 +96,7 @@ class Test_Flux1D( object ):
         assert flux[ 0] == 0
         assert flux[-1] == 0
 
-        bcp = fields.BoundaryCondition( 'periodic' )
+        bcp = general.fields.BoundaryCondition( 'periodic' )
         q.add_boundary_condition( bcp )
 
         flux = f.apply( q )

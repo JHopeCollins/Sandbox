@@ -26,7 +26,7 @@ class CDS2( dfc.DiffusiveFlux1D ):
     """
 
     def __init__( self ):
-        super( self.__class__, self ).__init__()
+        super( CDS2, self ).__init__()
         self.stencil_radius = 1
         return
 
@@ -70,7 +70,7 @@ class CDS4( dfc.DiffusiveFlux1D ):
     """
 
     def __init__( self ):
-        super( self.__class__, self ).__init__()
+        super( CDS4, self ).__init__()
         self.stencil_radius = 2
         return
 

@@ -21,7 +21,7 @@ class Domain( general.fields.Domain ):
         """
         initialise with cell size, and centre and vertex location, and number of cells
         """
-        super( self.__class__, self ).__init__( mesh )
+        super( Domain, self ).__init__( mesh )
 
         self.xh_wg = np.append( self.xh, self.xh[-1] + self.dxh[-1] )
         self.xh_wg = np.append( self.xh[0] - self.dxh[0], self.xh_wg )
@@ -41,23 +41,7 @@ class Domain( general.fields.Domain ):
         return
 
 
-class BoundaryCondition( object ):
-    """
-        Class for a boundary condition for a field
-
-        boundary condition has attributes:
-        name: string, name of flux class method which applies the boundary condition.
-        indx: (0 or -1) index of boundary to apply condition to.
-        val : value of boundary condition, eg for dirichlet condition
-    """
-    def __init__( self, name=None, indx=None, val=None ):
-        self.name = name
-        self.indx = indx
-        self.val  = val
-        return
-
-
-class Field1D( object ):
+class Field1D( general.fields.Field1D ):
     """
         Class for 1D finite volume scalar fields
 
@@ -65,27 +49,37 @@ class Field1D( object ):
     """
 
     def __init__( self, name, mesh ):
-        self.name   = name
-        self.mesh   = mesh
+        """
+        initialise field with a name, mesh, and empty nodal value arrays
+        """
+        super( Field1D, self ).__init__( name, mesh )
         self.val_wg = np.zeros_like(self.mesh.xp_wg)
         self.val    = self.val_wg[1:-1]
-        self.bconds = []
         return
 
     def set_field( self, data ):
-        self.val[:] = data[:]
+        """
+        sets the nodal values to the value of data, and updates the ghost cells
+        """
+        super( Field1D, self ).set_field( data )
         self.update_ghosts()
         return
 
     def copy( self ):
+        """
+        returns a copy (separate instance) of the field with identical mesh, nodal values and boundary conditions
+        """
         g = Field1D( self.name, self.mesh )
         g.set_field( self.val)
         for bc in self.bconds:
             g.add_boundary_condition( bc )
         return g
 
-    def update( self, dvar ):
-        self.val[:] += dvar[:]
+    def update( self, dval ):
+        """
+        update the nodal values by the amount dval
+        """
+        super( Field1D, self ).update( dval )
         self.update_ghosts()
         return
 
@@ -98,44 +92,8 @@ class Field1D( object ):
             input arguments:
             bc: must be BoundaryCondition instance
         """
-        identifier = 'boundary condition '+bc.name+' on field '+self.name
-
-        if bc.name == 'periodic':
-
-            del self.bconds[:]
-
-        else:
-
-            if bc.indx == None:
-                print( 'bc index must be specified for non-periodic '+identifier )
-                return
-            if ( bc.indx != 0 ) and (bc.indx != -1 ):
-                print( 'bc index must be 0 or -1 for non-periodic '+identifier )
-                return
-
-            for i, b in enumerate( self.bconds ):
-                if ( bc.indx == b.indx ) or ( b.name == 'periodic' ):
-                    del self.bconds[i]
-                    break
-
-        self.bconds.append( bc )
+        super( Field1D, self ).add_boundary_condition( bc )
         self.update_ghosts( )
-
-        return
-
-    def set_boundary_condition( self, name, indx=None, val=None ):
-        """
-            set a boundary condition to the field.
-
-            if location of input boundary condition already has a boundary condition, will replace with new one
-
-            input arguments:
-            name: string name of boundary condition
-            indx: for non-periodic bc, 0 or -1 for beginning/end of domain
-            val : for non-periodic bc, eg derivative value for neumann
-        """
-        bc = BoundaryCondition( name, indx, val )
-        self.add_boundary_condition( bc )
         return
 
     def update_ghosts( self ):
@@ -189,7 +147,7 @@ class UnsteadyField1D( Field1D ):
         same as Field1D, but value of field is saved at predetermined intervals in time
     """
     def __init__( self, name, mesh ):
-        super( self.__class__, self ).__init__( name, mesh )
+        super( UnsteadyField1D, self ).__init__( name, mesh )
         self.dt = None
         self.nt = 0
         self.t  = 0
@@ -198,7 +156,7 @@ class UnsteadyField1D( Field1D ):
         return
 
     def set_field( self, data ):
-        super(  self.__class__, self ).set_field( data )
+        super(  UnsteadyField1D, self ).set_field( data )
         self.history[:] = self.val[:]
 
     def set_timestep( self, dt ):
@@ -219,8 +177,7 @@ class UnsteadyField1D( Field1D ):
         return
 
     def update( self, dvar ):
-        super( self.__class__, self ).update( dvar )
-
+        super( UnsteadyField1D, self ).update( dvar )
         self.nt+=1
         self.t += self.dt
 
