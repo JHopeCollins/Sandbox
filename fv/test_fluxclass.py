@@ -1,26 +1,25 @@
 """
 Written by: J Hope-Collins (jth39@cam.ac.uk)
 
-Test suite for fluxclass.py file
+Test suite for fv.fluxclass.py file
 Includes tests for Flux1D class
 """
 
 import numpy as np
-import fields
-import fluxclass
+from sandbox import fv
 from sandbox import general
 
 class Test_Flux1D( object ):
     def test_init( self ):
-        f = fluxclass.Flux1D()
+        f = fv.fluxclass.Flux1D()
         assert f.stencil_radius == 1
         return
 
     def test_set_variable( self ):
         mesh = np.linspace( -0.05, 1.05, 12 )
-        x = fields.Domain( mesh )
+        x = fv.fields.Domain( mesh )
 
-        f = fluxclass.Flux1D()
+        f = fv.fluxclass.Flux1D()
         f.set_mesh( x )
 
         assert f.mesh is x
@@ -28,10 +27,10 @@ class Test_Flux1D( object ):
 
     def test_arg_list( self ):
         mesh = np.linspace( -0.05, 1.05, 12 )
-        x = fields.Domain( mesh )
-        q = fields.Field1D( 'q', x )
+        x = fv.fields.Domain( mesh )
+        q = fv.fields.Field1D( 'q', x )
 
-        f = fluxclass.Flux1D()
+        f = fv.fluxclass.Flux1D()
         f.set_mesh( x )
 
         args = f.arg_list( q )
@@ -44,10 +43,10 @@ class Test_Flux1D( object ):
 
     def test_flux_calculation( self ):
         mesh = np.linspace( -0.05, 1.05, 12 )
-        x = fields.Domain( mesh )
-        q = fields.Field1D( 'q', x )
+        x = fv.fields.Domain( mesh )
+        q = fv.fields.Field1D( 'q', x )
 
-        f = fluxclass.Flux1D()
+        f = fv.fluxclass.Flux1D()
         f.set_mesh( x )
 
         flux = f.flux_calculation( f.arg_list( q ) )
@@ -59,10 +58,10 @@ class Test_Flux1D( object ):
 
     def test_periodic( self ):
         mesh = np.linspace( -0.05, 1.05, 12 )
-        x = fields.Domain( mesh )
-        q = fields.Field1D( 'q', x )
+        x = fv.fields.Domain( mesh )
+        q = fv.fields.Field1D( 'q', x )
 
-        f = fluxclass.Flux1D()
+        f = fv.fluxclass.Flux1D()
         r = f.stencil_radius
         f.set_mesh( x )
         bcp = general.fields.BoundaryCondition( 'periodic' )
@@ -81,10 +80,10 @@ class Test_Flux1D( object ):
 
     def test_apply( self ):
         mesh = np.linspace( -0.05, 1.05, 12 )
-        x = fields.Domain( mesh )
-        q = fields.Field1D( 'q', x )
+        x = fv.fields.Domain( mesh )
+        q = fv.fields.Field1D( 'q', x )
 
-        f = fluxclass.Flux1D()
+        f = fv.fluxclass.Flux1D()
         r = f.stencil_radius
         f.set_mesh( x )
 

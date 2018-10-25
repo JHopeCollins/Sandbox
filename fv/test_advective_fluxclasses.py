@@ -6,7 +6,7 @@ Includes tests for AdvectiveFlux class
 """
 
 import numpy as np
-import fields
+from sandbox import fv
 import advective_fluxclasses as afx
 import reconstructions as rc
 import evolutions as ev
@@ -14,9 +14,9 @@ import evolutions as ev
 class Test_AdvectiveFlux1D( object ):
     def test_set_advection_velocity( self ):
         mesh = np.linspace( 0, 1, 11 )
-        x = fields.Domain( mesh )
+        x = fv.fields.Domain( mesh )
 
-        c = fields.Field1D( 'c', x )
+        c = fv.fields.Field1D( 'c', x )
         c.set_field( np.ones( 10 ) )
 
         f = afx.AdvectiveFlux1D()
@@ -28,12 +28,12 @@ class Test_AdvectiveFlux1D( object ):
 
     def test_arg_list( self ):
         mesh = np.linspace( 0, 1, 11 )
-        x = fields.Domain( mesh )
+        x = fv.fields.Domain( mesh )
 
-        c = fields.Field1D( 'c', x )
+        c = fv.fields.Field1D( 'c', x )
         c.set_field( np.ones( 10 ) )
 
-        q = fields.Field1D( 'q', x )
+        q = fv.fields.Field1D( 'q', x )
         q.set_field( np.zeros( 10 ) )
 
         f = afx.AdvectiveFlux1D()
