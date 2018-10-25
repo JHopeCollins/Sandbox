@@ -23,14 +23,15 @@ boundary conditions
    Change to normal field.val attributes not including ghosts, and separate field.val_wg (with ghosts) attribute probably nicer than having val_noghosts as normal interface for actual domain extent
       Same for Domain.(x, h, dx) etc
 
+array lengths
+   work out properly how long arrays should be (particularly flux arrays) at each stage, everywhere through the run.
+   make tests for this for each implementation class, to avoid all abstract class unit tests passing, and actual runs failing
+
 GHOST CELLS
    work out linear algebra for calculating ghost cells for finite difference stencils - can it be generalised? see Moin numerical book
       would this need to be in the specific flux class because it is unique to stencil? or keep it in the field class where .update_ghosts is?
    what happens if you do a lower order scheme across ghost cells calculated for a higher order - or even just different - scheme?
    how best to store and access the number of ghosts for cases with flux stencils of different widths?
-
-domain
-   probably need to store xv: vertices, xc: centres, h: volume
 
 flux shouldn't have a mesh attribute, should use q.mesh
 
@@ -40,8 +41,12 @@ URGENT---------------------URGENT
 
 MEDIUM-TERM----------------MEDIUM-TERM
 
+post-processing field
+   run field class is bare minimum to run
+   post-processing class has niceties like plotting, rms calculation, vorticity calculation etc
+
 plotting
-   plot separate lines for each cell to show discontinuity
+   plot separate lines for each cell to show discontinuity like dg plotting (needs to know reconstruction )
 
 Flux.periodic bc method
    bodge for periodifying dx array is not nice code, difficult to read
@@ -79,6 +84,7 @@ Flux limiter class type 2
 
 maths_utils
    Lp-norm estimation function
+   rms calculation
 
 numerical scheme testing
    Sod's problem (1D shock tube Riemann problem) [visual test]

@@ -5,10 +5,13 @@ Domain and Field classes for 1D scalar fields for Discontinuous Galerkin solver
 """
 
 import numpy as np
+
 import polys
 import timeseries_plotting as tsp
+import sandbox.general as general
 
-class Domain( object ):
+
+class Domain( general.fields.Domain ):
     """
         Domain for a discontinuous galerkin field
 
@@ -18,10 +21,8 @@ class Domain( object ):
         """
         initialise Domain with cell vertices and sizes
         """
-        self.xh = xh                    # cell vertex points
-        self.dx = np.diff( self.xh )    # cell size
-        self.nh = len(     self.dx )    # number of cells
-        self.dg = 0.5*self.dx           # cell jacobian
+        super( Domain, self ).__init__( xh )
+        self.dg = 0.5*self.dxh           # cell jacobian
         return
 
     def set_expansion( self, order ):
@@ -111,7 +112,7 @@ class UnsteadyField1D( Field1D ):
         same as Field1D, but value of field is saved at predetermined intervals in time
     """
     def __init__( self, name, mesh ):
-        super( self.__class__, self ).__init__( name, mesh )
+        super( UnsteadyField1D, self ).__init__( name, mesh )
         self.dt = None
         self.nt = 0
         self.t  = 0
@@ -123,7 +124,7 @@ class UnsteadyField1D( Field1D ):
         """
         set the value of the field and start recording history
         """
-        super(  self.__class__, self ).set_field( data )
+        super( UnsteadyField1D, self ).set_field( data )
         self.history[:] = self.val[:]
         return
 
@@ -150,7 +151,7 @@ class UnsteadyField1D( Field1D ):
         """
         update nodal value and save periodically save history
         """
-        super( self.__class__, self ).update( dvar )
+        super( UnsteadyField1D, self ).update( dvar )
 
         self.nt+=1
         self.t += self.dt

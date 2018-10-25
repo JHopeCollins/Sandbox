@@ -26,7 +26,7 @@ class CDS2( afc.AdvectiveFlux1D ):
     """
 
     def __init__( self ):
-        super( self.__class__, self ).__init__()
+        super( CDS2, self ).__init__()
         self.stencil_radius = 1
         return
 
@@ -104,7 +104,7 @@ class CDS2_2( afc.AdvectiveFlux1D ):
     """
 
     def __init__( self ):
-        super( self.__class__, self ).__init__()
+        super( CDS2_2, self ).__init__()
         self.stencil_radius = 1
         return
 
@@ -152,7 +152,7 @@ class UDS1( afc.UpwindFlux1D ):
     """
 
     def __init__( self ):
-        super( self.__class__, self ).__init__()
+        super( UDS1, self ).__init__()
         self.stencil_radius = 1
         return
 
@@ -235,7 +235,7 @@ class QUICK3( afc.UpwindFlux1D ):
     """
 
     def __init__( self ):
-        super( self.__class__, self ).__init__()
+        super( QUICK3, self ).__init__()
         self.stencil_radius = 2
         return
 

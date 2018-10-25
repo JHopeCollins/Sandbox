@@ -32,10 +32,10 @@ class Flux1D( object ):
 
     def set_mesh( self, x ):
         """
-            Set the variable field that the flux is transporting
+            Set the domain over which the field the flux acts on is defined
 
             input arguments:
-            var: Field1D instance for variable
+            x: Domain instance for mesh
         """
         self.mesh = x
         return
@@ -47,7 +47,7 @@ class Flux1D( object ):
             returns:
             flux: array of fluxes at cell faces. len(flux) = len(var)+1
         """
-        flux = np.zeros( len( q.val_noghost ) + 1 )
+        flux = np.zeros( len( q.val ) + 1 )
 
         args = self.arg_list( q )
 
@@ -79,10 +79,10 @@ class Flux1D( object ):
         # temporary argument list spanning periodic plane
         args_temp = []
         for arg in args:
-            if arg is self.mesh.dx:
+            if arg is self.mesh.dxp_wg:
                 args_temp.append( mth.periodify_sym_patch( arg[1:-1], bound ) )
 
-                pdx = ( self.mesh.dx[0] + self.mesh.dx[-1] ) /2.0
+                pdx = ( arg[0] + arg[-1] ) /2.0
                 args_temp[-1] = args_temp[-1][1:-1]
                 args_temp[-1] = np.insert( args_temp[-1], bound-1, pdx )
 
@@ -114,9 +114,9 @@ class Flux1D( object ):
         return a dummy argument list for the sake of testing .apply method
         """
         args = []
-        args.append( q.val )
-        args.append( self.mesh.dx )
-        args.append( self.mesh.h  )
+        args.append( q.val_wg )
+        args.append( self.mesh.dxp )
+        args.append( self.mesh.dxh )
         return args
 
     def flux_calculation( self, args ):

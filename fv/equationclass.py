@@ -30,12 +30,12 @@ class Equation( object ):
         return
 
     def spatial_operator( self, q ):
-        flux = np.zeros( len( q.val_noghost ) +1 )
+        flux = np.zeros( len( q.val ) +1 )
 
         for term in self.flux_terms:
-            flux += term.apply( q )
+            flux[:] += term.apply( q )
 
-        return np.diff( flux ) / q.mesh.h[1:-1]
+        return np.diff( flux ) / q.mesh.dxh
 
     def step(self, dt ):
         dq = self.time_stepper( dt, self.q, self.spatial_operator )

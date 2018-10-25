@@ -11,18 +11,14 @@ from dg import fields
 from fv import evolutions
 from fv import ODEintegrators
 
-nh = 10
-p  = 6
+nh = 2
+p  = 8
 
 T  = 10
 L  = 2*np.pi
 
-c   = 1
-cfl = 0.05
-
-dx = L / nh
-dt = cfl * dx / c
-nt = int( T/dt )
+c   = 2*np.pi
+cfl = 0.025
 
 flux = evolutions.upwind1
 step = ODEintegrators.RungeKutta4
@@ -30,6 +26,10 @@ step = ODEintegrators.RungeKutta4
 mesh = np.linspace( 0, L, nh+1 )
 mesh = fields.Domain( mesh )
 mesh.set_expansion( p )
+
+dx = np.min( mesh.dxh )
+dt = cfl * dx / c
+nt = int( T/dt )
 
 q = fields.UnsteadyField1D( 'q', mesh )
 q.set_field( np.sin( mesh.xp ) )
