@@ -6,12 +6,247 @@ to clean up later
 """
 
 import numpy as np
+import math
+from scipy.special import gamma
+
+def swap( a, b ):
+    temp = a
+    a = b
+    b = temp
+    return
+
+
+class OrthonormalJacobi( object ):
+    def GaussQuadrature( self, alpha, beta, N ):
+        pass
+
+    def GaussLobattoNodes( self, alpha, beta, N ):
+        pass
+
+    def a( self, alpha, beta, n ):
+        """
+        returns the coefficient a_n for the recurrence formula
+        """
+
+        c0 = 2.0 / ( 2.0*n + alpha + beta )
+
+        c1 =      ( n + alpha + beta )
+        c1 = c1 * ( n + alpha        )
+        c1 = c1 * ( n         + beta )
+        c1 = c1 *   n
+
+        c2 = 2.0*n + alpha + beta - 1
+        c3 = 2.0*n + alpha + beta + 1
+
+        a = c0 * np.sqrt( c1 / ( c2*c3 ) )
+
+        return a
+
+    def b( self, alpha, beta, n ):
+        """
+        returns the coefficient b_n for the recurrence formula
+        """
+
+        c0 = alpha*alpha - beta*beta
+
+        c1 = 2.0*n + alpha + beta
+        c2 = 2.0*n + alpha + beta + 2
+
+        b = c0 / ( c1*c2 )
+
+        return -b
+
+    def P0( self, alpha, beta, x ):
+        """
+        returns the value of the 0th order polynomial to start the recurrence
+        """
+
+        c0 = 2**( -( alpha + beta + 1 ) )
+
+        c1 = gamma( alpha + beta + 2 )
+        c2 = gamma( alpha        + 1 )
+        c3 = gamma(         beta + 1 )
+
+        p0 = np.sqrt( c0*c1 / ( c2*c3 ) )
+
+        p0 = np.ones( len( x ) ) * p0
+
+        return p0
+
+    def P1( self, alpha, beta, x ):
+        """
+        returns the value of the 1st order polynomial to start the recurrence
+        """
+
+        c0 =        alpha + beta + 3
+        c0 = c0 / ( alpha        + 1 )
+        c0 = c0 / (         beta + 1 )
+        c0 = np.sqrt( c0 )
+
+        c1 = ( alpha + beta + 2 )*x
+        c1 = c1 + ( alpha - beta )
+
+        p0 = self.P0( alpha, beta, x )
+
+        p1 = 0.5 * p0 * c0 * c1
+
+        return p1
+
+    def P( self, alpha, beta, n, x ):
+        """
+        return values of jacobi polynomial order n with parameters alpha, beta at absicca x.
+
+        appendix A: discontinuous galerkin methods, algorithms, analysis and applications
+        """
+        if( n==0 ): return self.P0( alpha, beta, x )
+        if( n==1 ): return self.P1( alpha, beta, x )
+
+        p = np.zeros( [ n+1, len(x) ] )
+
+        p[0,:] = self.P0( alpha, beta, x )
+        p[1,:] = self.P1( alpha, beta, x )
+
+        for i in range( 2, n+1 ):
+            p[i,:] = p[i-1,:] *( x-self.b( alpha,beta,i-1 ))
+            p[i,:] = p[i,  :] -    self.a( alpha,beta,i-1 )*p[i-2,:]
+            p[i,:] = p[i,  :] /    self.a( alpha,beta,i   )
+
+        return p[n,:]
+
+    def dP( self, alpha, beta, n, x ):
+        c0 = np.sqrt( n*( n + alpha + beta + 1 ) )
+        return c0 * self.P( alpha+1, beta+1, n-1, x )
+
+    def w( self, alpha, beta, x ):
+        return (1-x)**alpha * (1+x)**beta
+
+
+class OrthogonalJacobi( object ):
+    def GaussQuadrature( self, alpha, beta, N ):
+        pass
+
+    def GaussLobattoNodes( self, alpha, beta, N ):
+        pass
+
+    def P0( self, alpha, beta, x ):
+        return np.ones( len( x ) )
+
+    def P1( self, alpha, beta, x ):
+        c0 = 0.5*( alpha + beta + 2 )
+        c1 = 0.5*( alpha - beta )
+        return c0*x + c1
+
+    def a( self, alpha, beta, n ):
+        a  =   2.0*n + alpha + beta + 1.0
+        a *= ( 2.0*n + alpha + beta + 2.0 )
+        a /= (     n + alpha + beta + 1.0 )
+        a /= (     n                + 1.0 )
+        return 0.5*a
+
+    def b( self, alpha, beta, n ):
+        b  = beta*beta - alpha*alpha
+        b *= ( 2.0*n + alpha + beta + 1.0 )
+        b /= (     n + alpha + beta + 1.0 )
+        b /= ( 2.0*n + alpha + beta       )
+        b /= (     n                + 1.0 )
+        return 0.5*b
+
+    def c( self, alpha, beta, n ):
+        c  =   2.0*n + alpha + beta + 2.0
+        c *= (     n + alpha              )
+        c *= (     n         + beta       )
+        c /= ( 2.0*n + alpha + beta       )
+        c /= (     n + alpha + beta + 1.0 )
+        c /= (     n                + 1.0 )
+        return c
+
+    def P( self, alpha, beta, n, x ):
+        """
+        return the value of the nth order Jacobi polynomial with parameters alpha and beta at absicca x.
+
+        values calculate using the recurrence relation given on page 74 of:
+        http://lsec.cc.ac.cn/~hyu/teaching/shonm2013/STWchap3.2p.pdf
+        """
+        if ( n==0 ): return self.P0( alpha, beta, x )
+        if ( n==1 ): return self.P1( alpha, beta, x )
+
+        p = np.zeros( [n+1, len(x)] )
+
+        p[0,:] = self.P0( alpha, beta, x )
+        p[1,:] = self.P1( alpha, beta, x )
+
+        for i in range( 2, n+1 ):
+            a = self.a( alpha, beta, i-1 )
+            b = self.b( alpha, beta, i-1 )
+            c = self.c( alpha, beta, i-1 )
+
+            p[i,:] = ( a*x - b )*p[i-1,:] - c*p[i-2,:]
+
+        return p[n,:]
+
+    def dP( self, alpha, beta, n, x ):
+        return np.sqrt( n*(n+alpha+beta+1) )*self.P( 1, 1, n-1, x )
+
+    def innerProduct( self, alpha, beta, i, j ):
+        if( i != j ): return 0
+        dot  =   2.0**(   alpha + beta + 1.0 )
+        dot /= ( 2.0*i +  alpha + beta + 1.0 )
+
+        dot *= gamma( i + alpha        + 1.0 )
+        dot *= gamma( i +         beta + 1.0 )
+        dot /= gamma( i + alpha + beta + 1.0 )
+        
+        dot /= math.factorial( i )
+
+        return dot
+
+    def w( self, alpha, beta, x ):
+        return (1-x)**alpha * (1+x)**beta
+
+
+class OrthogonalLegendre( object ):
+    def GaussQuadrature( self, N ):
+        pass
+
+    def GaussLobattoNodes( self, N ):
+        pass
+
+    def P0( self, x ):
+        return np.ones( len( x ) )
+
+    def P1( self, x ):
+        return x
+
+    def P( self, x ):
+        if( n==0 ): return self.P0( alpha, beta, x )
+        if( n==1 ): return self.P1( alpha, beta, x )
+
+        p = np.zeros( [ n+1, len(x) ] )
+
+        p[0,:] = self.P0( alpha, beta, x )
+        p[1,:] = self.P1( alpha, beta, x )
+
+        for i in range( 2, n+1 ):
+            p[i,:] = p[i-1,:] * x
+            p[i,:] = p[i,  :] * ( 2*n - 1 )
+            p[i,:] = p[i,  :] - (   n - 1 ) * p[i-2,:]
+            p[i,:] = p[i,  :] / n
+
+        return p[n,:]
+
+    def dP( self, n, x ):
+        return np.sqrt( n*(n+1) )*OrthogonalJacobi.P( 1, 1, n-1, x )
+
+    def innerProduct( self, i, j ):
+        if( i != j ): return 0
+
+        return 2.0 / ( 2.0*i + 1 )
+
 
 class Legendre( object ):
     """
     class for Legendre polynomials, including zeros and weights for Legendre-Gauss quadrature
     """
-
     zeros = np.asarray( [ np.asarray( [ 0 ] ),
             np.asarray( [ 0 ] ),
             np.asarray( [ -0.577350269189626, 0.577350269189626 ] ),
@@ -42,6 +277,7 @@ class Legendre( object ):
         Lowan, Davids, Levenson, American Mathematical Society 1941, 'Table of the zeros of the legendre polynomials of order 1-16 and the weight coefficients for Gauss' mechanical quadrature formula'
         """
         return self.zeros[ n ][ k ], self.weights[ n ][ k ]
+
 
 class Lagrange( object ):
     def interpolate( self, x, y ):
