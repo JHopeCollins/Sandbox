@@ -97,3 +97,48 @@ class UpwindFlux1D( AdvectiveFlux1D ):
     def downwind_indx( self, indxs, direction, n ):
         return indxs + n*direction - (direction-1)/2
 
+class PressureFlux1D( flc.Flux1D ):
+    def set_pressure( self, p ):
+        self.p = p
+        return
+
+    def arg_list( self, q ):
+        args = []
+        args.append( q.val_wg )
+        args.append( self.mesh.dxp_wg )
+        args.append( self.mesh.dxh_wg )
+        args.append( self.p.val_wg )
+        return args
+
+class REAPressureFlux1D(  PressureFlux1D ):
+    def set_reconstruction_radius( self, r ):
+        self.stencil_radius = r
+
+    def set_reconstruction( self, r ):
+        self.reconstruct = r
+        return
+
+    def set_evolution( self, e ):
+        self.evolve = e
+        return
+
+    def flux_calculation( self, args ):
+        r = self.stencil_radius
+        q   = args[0]
+        dxp = args[1]
+        dxh = args[2]
+        p   = args[3]
+        v   = args[4]
+        v   = np.ones( len(v) )
+
+        pL, pR = self.reconstruct( p[1:-1], dxp[1:-1], dxh[1:-1] )
+        vL, vR = self.reconstruct( v[1:-1], dxp[1:-1], dxh[1:-1] )
+
+        flux = self.evolve( pL,
+                            pR,
+                            vL,
+                            vR)
+
+        return flux
+       
+

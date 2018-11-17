@@ -109,6 +109,21 @@ class Flux1D( object ):
 
         return
 
+    def naive_adiabatic(  self, bc, flux, args ):
+        """
+        apply zero flux at boundary cells
+        """
+        for i in range( -self.stencil_radius, self.stencil_radius ):
+            flux[i] = 0
+        return
+
+    def ghosts( self, bc, flux, args ):
+        """
+        calculate boundary fluxes using usual flux stencil over the ghost cells
+        """
+        flux[:] = self.flux_calculation( args )
+        return
+
     def arg_list( self, q ):
         """
         return a dummy argument list for the sake of testing .apply method

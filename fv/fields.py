@@ -8,10 +8,10 @@ import numpy as np
 
 import maths_utils as mth
 import timeseries_plotting as tsp
-from sandbox import general
+import sandbox as sb
 
 
-class Domain( general.fields.Domain ):
+class Domain( sb.general.fields.Domain ):
     """
         Domain of a finite volume field
 
@@ -41,13 +41,12 @@ class Domain( general.fields.Domain ):
         return
 
 
-class Field1D( general.fields.Field1D ):
+class Field1D( sb.general.fields.Field1D ):
     """
         Class for 1D finite volume scalar fields
 
         field consists of array of value of the field, and list of boundary conditions
     """
-
     def __init__( self, name, mesh ):
         """
         initialise field with a name, mesh, and empty nodal value arrays
@@ -64,16 +63,6 @@ class Field1D( general.fields.Field1D ):
         super( Field1D, self ).set_field( data )
         self.update_ghosts()
         return
-
-    def copy( self ):
-        """
-        returns a copy (separate instance) of the field with identical mesh, nodal values and boundary conditions
-        """
-        g = Field1D( self.name, self.mesh )
-        g.set_field( self.val)
-        for bc in self.bconds:
-            g.add_boundary_condition( bc )
-        return g
 
     def update( self, dval ):
         """
@@ -139,6 +128,17 @@ class Field1D( general.fields.Field1D ):
         self.val_wg[ghost] = self.val_wg[in1] - dn*bc.val*dx
         return
 
+    def naive_adiabatic( self, bc ):
+        """
+        set ghost cell value for neumann boundary condition
+        """
+        ghost = bc.indx
+        in2 = mth.step_into_array( bc.indx, 2 )
+        in1 = mth.step_into_array( bc.indx, 1 )
+
+        self.val_wg[in1  ] = self.val_wg[in2]
+        self.val_wg[ghost] = self.val_wg[in2]
+
 
 class UnsteadyField1D( Field1D ):
     """
@@ -189,4 +189,126 @@ class UnsteadyField1D( Field1D ):
     def plot_history( self ):
         tsp.view_timeseries1D( self )
 
+
+class VectorField1D( object ):
+    def __init__( self, n, name, mesh ):
+        assert( len( name ) == n+1 )
+        self.n     = n
+        self.names = name
+        self.name  = name[0]
+        self.mesh  = mesh
+
+        self.val = np.zeros( [ n, len( mesh.xp ) ] )
+
+        self.q = []
+        for i in range( n ):
+            self.q.append( Field1D( name[i+1], mesh ) )
+            self.q[i].val = self.val[i,:]
+
+        return
+
+    def set_field( self, data ):
+        self.val[:,:] = data[:,:]
+        return
+
+    def copy( self ):
+        g = VectorField1D( self.n, self.names, self.mesh )
+        for i in range( self.n ):
+            g.q[i] = self.q[i].copy()
+
+        return g
+        
+    def add_boundary_condition( self, i, bc ):
+        if type(i) == type(1):
+            self.q[i].add_boundary_condition( bc )
+            return
+
+        elif type(i) == type('string'):
+            for qi in self.q:
+                if qi.name == i:
+                    qi.add_boundary_condition( bc )
+                    return
+
+        else:
+            print( 'invalid id for field of VectorField1D in add_boundary_condition' )
+            return
+
+    def update_ghosts( self ):
+        pass
+
+    def periodic( self, bc ):
+        pass
+
+    def __getitem__( self, index ):
+        return self.q[index]
+
+    def __add__( self, b ):
+        assert self.mesh is b.mesh
+
+        new = self.copy()
+        new.set_field( self.val + b.val )
+        return new
+
+    def __sub__( self, b ):
+        assert self.mesh is b.mesh
+
+        new = self.copy()
+        new.set_field( self.val - b.val )
+        return new
+
+    def __mul__( self, b ):
+        new = self.copy()
+
+        if( 'mesh' in dir(b) ):
+            if( self.mesh is b.mesh ):
+                new.set_field( self.val * b.val )
+            else:
+                return None
+        else:
+            new.set_field( self.val * b )
+
+        return new
+
+    def __div__( self, b ):
+        new = self.copy()
+
+        if( 'mesh' in dir(b) ):
+            if( self.mesh is b.mesh ):
+                new.set_field( self.val / b.val )
+            else:
+                return None
+        else:
+            new.set_field( self.val / b )
+
+        return new
+
+    def __truediv__( self, b ):
+        new = self.copy()
+
+        if( 'mesh' in dir(b) ):
+            if( self.mesh is b.mesh ):
+                new.set_field( self.val / b.val )
+            else:
+                return None
+        else:
+            new.set_field( self.val / b )
+
+        return new
+
+    def __eq__( self, b ):
+        if self is b: return True
+
+        if( type(b) != type( self ) ): return False
+
+        if( self.n != b.n ): return False
+
+        if( self.mesh is not b.mesh ): return False
+
+        for i in range( self.n ):
+            if( self[i] != b[i] ): return False
+
+        return True
+
+    def __ne__( self, b ):
+        return ( ( self == b ) == False )
 

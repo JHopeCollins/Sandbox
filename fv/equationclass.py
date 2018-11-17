@@ -14,6 +14,7 @@ class Equation( object ):
     """
     def __init__( self ):
         self.flux_terms = []
+        self.dq = None
         return
 
     def set_variable( self, q ):
@@ -38,7 +39,17 @@ class Equation( object ):
         return np.diff( flux ) / q.mesh.dxh
 
     def step(self, dt ):
-        dq = self.time_stepper( dt, self.q, self.spatial_operator )
-        self.q.update( dq )
+        # dq = self.time_stepper( dt, self.q, self.spatial_operator )
+        # self.q.update( dq )
+        self.calculate_update( dt )
+        self.apply_update()
+        return
+
+    def calculate_update( self, dt ):
+        self.dq = self.time_stepper( dt, self.q, self.spatial_operator )
+        return
+
+    def apply_update( self ):
+        self.q.update( self.dq )
         return
 

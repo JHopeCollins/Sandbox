@@ -33,7 +33,7 @@ class Test_Field1D( object ):
         f = fields.Field1D( 'x', d )
 
         assert len( f.val_wg ) == len( d.xp_wg )
-        assert np.all( f.val== f.val_wg[1:-1] )
+        assert np.all( f.val == f.val_wg[1:-1] )
         assert f.bconds == []
 
         return
@@ -48,27 +48,6 @@ class Test_Field1D( object ):
 
         assert f.val_wg[ 0] == 0
         assert f.val_wg[-1] == 0
-
-        return
-
-    def test_copy( self ):
-        mesh = np.linspace( -0.05, 1.05, 12 )
-        d = fields.Domain( mesh )
-        f = fields.Field1D( 'x', d )
-
-        data = np.asarray( range( len( f.val) ) )
-        f.set_field( data )
-
-        bcp = general.fields.BoundaryCondition( name='periodic' )
-        f.add_boundary_condition( bcp )
-
-        g = f.copy()
-
-        assert g is not f
-        assert g.name == f.name
-        assert g.mesh == f.mesh
-        assert np.all( g.val    == f.val    )
-        assert np.all( g.bconds == f.bconds )
 
         return
 
@@ -257,5 +236,269 @@ class Test_UnsteadyField1D( object ):
         return
 
 
+class Test_VectorField1D( object ):
+    def test_init( self ):
+        x = np.linspace( 0, 1, 11 )
+        x = fields.Domain( x )
 
+        name = [ 'q', 'q0', 'q1' ]
+
+        q = fields.VectorField1D( 2, name, x )
+
+        assert q.n     == 2
+        assert q.mesh  is x
+        assert q.name  == 'q'
+        assert q.names == name
+
+        assert len( q.q ) == 2
+        assert q.val.shape == ( 2, len( x.xp ) )
+        for i, qi in enumerate( q.q ):
+            assert qi.name == name[i+1]
+            assert qi.mesh is x
+            assert len( qi.val ) == len( x.xp )
+
+        return
+
+    def test_set_field( self ):
+        x = np.linspace( 0, 1, 11 )
+        x = fields.Domain( x )
+
+        name = [ 'q', 'q0', 'q1' ]
+
+        q = fields.VectorField1D( 2, name, x )
+
+        assert np.all( q.val == 0 )
+        data = np.ones( q.val.shape )
+        data[1,:] *= 2
+        q.set_field( data )
+
+        assert np.all( q.val == data )
+        assert np.all( q.q[0][:] == data[0,:] )
+        assert np.all( q.q[1][:] == data[1,:] )
+
+        return
+
+    def test_copy( self ):
+        x = np.linspace( 0, 1, 11 )
+        x = fields.Domain( x )
+
+        name = [ 'q', 'q0', 'q1' ]
+
+        q = fields.VectorField1D( 2, name, x )
+
+        bc0 = general.fields.BoundaryCondition(name='periodic' )
+        bc1 = general.fields.BoundaryCondition(name='periodic' )
+
+        q.add_boundary_condition( 0, bc0 )
+        q.add_boundary_condition( 1, bc1 )
+
+        q2 = q.copy()
+        assert q2 is not q
+        assert q2.n    == q.n
+        assert q2.name == q.name
+        assert q2.mesh == q.mesh
+
+        for i in range( q2.n ):
+            assert q2.q[i] is not q.q[i]
+            assert q2.q[i] ==     q.q[i]
+
+        return
+
+    def test_add_boundary_condition( self ):
+        x = np.linspace( 0, 1, 11 )
+        x = fields.Domain( x )
+
+        name = [ 'q', 'q0', 'q1' ]
+
+        q = fields.VectorField1D( 2, name, x )
+
+        bc0 = general.fields.BoundaryCondition(name='periodic' )
+        bc1 = general.fields.BoundaryCondition(name='periodic' )
+
+        q.add_boundary_condition(   0,  bc0 )
+        assert bc0 in q.q[0].bconds
+        q.add_boundary_condition( 'q1', bc1 )
+        assert bc1 in q.q[1].bconds
+        pass
+
+    def test_update_ghosts( self ):
+        pass
+
+    def test_periodic( self ):
+        pass
+
+    def test__getitem__( self ):
+        x = np.linspace( 0, 1, 11 )
+        x = fields.Domain( x )
+
+        name = [ 'q', 'q0', 'q1' ]
+
+        q = fields.VectorField1D( 2, name, x )
+
+        assert q[0] is q.q[0]
+        assert q[1] is q.q[1]
+        return
+
+    def test__add__( self ):
+        x = np.linspace( 0, 1, 11 )
+        x = fields.Domain( x )
+
+        name = [ 'q', 'q0', 'q1' ]
+
+        q1 = fields.VectorField1D( 2, name, x )
+        q2 = fields.VectorField1D( 2, name, x )
+
+        data1 = np.ones( q1.val.shape )
+        data1[1,:] *= 2
+        q1.set_field( data1 )
+
+        data2 = np.ones( q2.val.shape )
+        data2[0,:] *= 3
+        data2[1,:] *= 4
+        q2.set_field( data2 )
+
+        q3 = q1 + q2
+
+        assert q3 is not q1
+        assert q3 is not q2
+
+        assert np.all( q3.val == q1.val + q2.val )
+
+        return
+
+    def test__sub__( self ):
+        x = np.linspace( 0, 1, 11 )
+        x = fields.Domain( x )
+
+        name = [ 'q', 'q0', 'q1' ]
+
+        q1 = fields.VectorField1D( 2, name, x )
+        q2 = fields.VectorField1D( 2, name, x )
+
+        data1 = np.ones( q1.val.shape )
+        data1[1,:] *= 2
+        q1.set_field( data1 )
+
+        data2 = np.ones( q2.val.shape )
+        data2[0,:] *= 3
+        data2[1,:] *= 4
+        q2.set_field( data2 )
+
+        q3 = q1 - q2
+
+        assert q3 is not q1
+        assert q3 is not q2
+
+        assert np.all( q3.val == q1.val - q2.val )
+
+        return
+
+    def test__mul__( self ):
+        x = np.linspace( 0, 1, 11 )
+        x = fields.Domain( x )
+
+        name = [ 'q', 'q0', 'q1' ]
+
+        q1 = fields.VectorField1D( 2, name, x )
+        q2 = fields.VectorField1D( 2, name, x )
+
+        data1 = np.ones( q1.val.shape )
+        data1[1,:] *= 2
+        q1.set_field( data1 )
+
+        data2 = np.ones( q2.val.shape )
+        data2[0,:] *= 3
+        data2[1,:] *= 4
+        q2.set_field( data2 )
+
+        q3 = q1 * q2
+        q4 = q1*2
+
+        assert q3 is not q1
+        assert q3 is not q2
+
+        assert np.all( q3.val == q1.val * q2.val )
+        assert np.all( q4.val == 2*q1.val )
+
+        return
+
+    def test__div__( self ):
+        x = np.linspace( 0, 1, 11 )
+        x = fields.Domain( x )
+
+        name = [ 'q', 'q0', 'q1' ]
+
+        q1 = fields.VectorField1D( 2, name, x )
+        q2 = fields.VectorField1D( 2, name, x )
+
+        data1 = np.ones( q1.val.shape )
+        data1[1,:] *= 2
+        q1.set_field( data1 )
+
+        data2 = np.ones( q2.val.shape )
+        data2[0,:] *= 3
+        data2[1,:] *= 4
+        q2.set_field( data2 )
+
+        q3 = q1 / q2
+        q4 = q1/2
+
+        assert q3 is not q1
+        assert q3 is not q2
+
+        assert np.all( q3.val == q1.val / q2.val )
+        assert np.all( q4.val == q1.val/2 )
+
+        return
+
+    def test__eq__( self ):
+        x = np.linspace( 0, 1, 11 )
+        y = fields.Domain( x )
+        x = fields.Domain( x )
+
+        name = [ 'q', 'q0', 'q1' ]
+
+        q0 = fields.VectorField1D( 2, name, x )
+        q1 = fields.VectorField1D( 2, name, x )
+        q2 = fields.VectorField1D( 2, name, y )
+
+        assert( q0 == q0 )
+        assert( q0 !=  0 )
+        assert( q0 == q1 )
+        assert( q0 != q2 )
+
+        q2 = q0.copy()
+
+        data1 = np.ones( q1.val.shape )
+        data1[1,:] *= 2
+        q0.set_field( data1 )
+        q1.set_field( data1 )
+
+        data2 = np.ones( q2.val.shape )
+        data2[0,:] *= 3
+        data2[1,:] *= 4
+        q2.set_field( data2 )
+
+        assert( q0 == q1 )
+        assert( q0 != q2 )
+
+        q2 = q0.copy()
+
+        bc0 = general.fields.BoundaryCondition( name='periodic' )
+        bc1 = general.fields.BoundaryCondition( name='neumann', indx=0, val=0 )
+
+        assert( bc0 != bc1 )
+
+        q0.add_boundary_condition( 0, bc0 )
+        q1.add_boundary_condition( 0, bc0 )
+        q2.add_boundary_condition( 0, bc1 )
+
+        assert( q0 == q1 )
+        assert( q0 != q2 )
+
+        q2 = q0.copy()
+        q2.add_boundary_condition( 1, bc0 )
+        assert( q0 != q2 )
+
+        return
 

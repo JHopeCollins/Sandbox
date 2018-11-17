@@ -9,6 +9,7 @@ https://github.com/barbagroup/CFDPython
 import numpy as np
 import matplotlib.pyplot as plt
 import maths_utils as mth
+import sandbox as sb
 
 import advective_fluxclasses as afc
 import advective_fluxschemes as afs
@@ -24,7 +25,7 @@ ufunc = mth.BurgersWave1D()
 
 #set up problem
 nx = 201
-nt = 1600
+nt = 1000
 L  = 2.*np.pi
 dx = L/(nx-1)
 nu = 0.17
@@ -34,9 +35,16 @@ t  = 0
 x  = np.linspace(0, L, nx)
 x  = fields.Domain( x )
 u  = fields.UnsteadyField1D( 'u', x )
-u.set_boundary_condition( name='periodic' )
 u.set_timestep( dt )
 u.set_save_interval( nt=5 )
+
+bcp  = sb.general.fields.BoundaryCondition(  name='periodic' )
+bcn0 = sb.general.fields.BoundaryCondition( name='naive_adiabatic', indx= 0, val=0 )
+bcn1 = sb.general.fields.BoundaryCondition( name='naive_adiabatic', indx=-1, val=0 )
+
+u.add_boundary_condition( bcp  )
+# u.add_boundary_condition( bcn0 )
+# u.add_boundary_condition( bcn1 )
 
 #set initial solution
 u_0 = np.asarray([ufunc(t, x0, nu) for x0 in x.xp])

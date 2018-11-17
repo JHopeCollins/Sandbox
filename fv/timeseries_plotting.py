@@ -39,6 +39,7 @@ def view_timeseries1D( field ):
     fig, ax = plt.subplots()
     ax.idx = 0
     ax.field = field
+    ax.set_ylim( [ np.min( field.history ), np.max( field.history ) ] )
     ax.plot( field.mesh.xp, field.history[0,:] )
     fig.show()
 

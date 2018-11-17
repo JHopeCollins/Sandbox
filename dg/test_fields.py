@@ -78,25 +78,6 @@ class Test_Field1D( object ):
         assert np.all( f.val == y )
         return
 
-    def test_copy( self ):
-        mesh = np.linspace( -1.0, 1.0, 11 )
-        mesh = fields.Domain( xh=mesh )
-        mesh.set_expansion( order=3 )
-        y = np.asarray( range( len( mesh.xp ) ) )
-
-        f = fields.Field1D( 'q', mesh )
-        f.set_field( y )
-
-        g = f.copy()
-
-        assert g is not f
-        assert g.mesh is f.mesh
-        assert g.name == f.name
-        assert np.all( g.val    == f.val    )
-        assert np.all( g.bconds == f.bconds )
-
-        return
-
     def test_update( self ):
         mesh = np.linspace( -1.0, 1.0, 11 )
         mesh = fields.Domain( xh=mesh )

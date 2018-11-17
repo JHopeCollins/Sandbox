@@ -22,6 +22,9 @@ def upwind1( qL, qR, vL, vR, ):
     mask = direction == -1
     flux[ mask ] = qR[ mask ] * vR[ mask ]
 
+    mask = direction == 0
+    flux[ mask ] = qR[ mask ] * vR[ mask ]
+
     return flux
 
 def LaxFriedrichs1( qL, qR, vL, vR, dx, dt ):

@@ -86,17 +86,6 @@ class Field1D( object ):
         self.val[:] = data[:]
         return
 
-    def copy( self ):
-        """
-        returns a copy (separate instance) of the field with identical mesh, nodal values and boundary conditions
-        """
-        g = Field1D( self.name, self.mesh )
-        g.set_field( self.val )
-        for bc in self.bconds:
-            g.bconds.append( bc )
-
-        return g
-
     def update( self, dval ):
         """
         update the nodal values by the amount dval

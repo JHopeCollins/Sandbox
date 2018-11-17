@@ -285,3 +285,63 @@ class QUICK3( afc.UpwindFlux1D ):
 
         return flux
 
+class PressureUDS1( afc.PressureFlux1D ):
+    def __init__( self ):
+        super( PressureUDS1, self ).__init__()
+        self.stencil_radius = 1
+        return
+
+    def set_advection_velocity( self, v ):
+        self.vel = v
+        return
+
+    def arg_list( self, q ):
+        args = super( PressureUDS1, self ).arg_list( q )
+        args.append( self.vel.val_wg )
+        return args
+
+    def cell_face_direction( self, u ):
+        """
+        return sign of average value of u at cell faces
+        """
+        r = self.stencil_radius
+        return np.sign( u[r:-(r+1)] + u[r+1:-r] ).astype( int )
+
+    def cell_indxs( self, u ):
+        """
+        return indices of cell to left of each domain-centre face
+        """
+        r = self.stencil_radius
+        l = len( u ) - ( 2*r + 1 )
+        return np.asarray( range( l ) ) + r
+
+    def upwind_indx( self, indxs, direction, n ):
+        return indxs - n*direction + (direction+1)/2
+
+    def flux_calculation( self, args ):
+        """
+            Calculate the flux in the centre of the domain (cell faces where stencil does not overlap with boundary)
+
+            input arguments:
+            var: variable to be transported
+            other_var_list: [ advection velocity ]
+            par_list: None
+
+            returns:
+            flux: array of diffusive fluxes at the cell faces in the centre of the domain. len(flux)=len(var)-1
+        """
+        var = args[0]
+        dx  = args[1]
+        h   = args[2]
+        p   = args[3]
+        u   = args[3]
+
+        direction = self.cell_face_direction( u )
+        indxs     = self.cell_indxs( u )
+        upwind    = self.upwind_indx( indxs, direction, 1 )
+
+        flux = p[upwind]
+
+        return flux
+
+
