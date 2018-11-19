@@ -6,13 +6,11 @@ Includes tests for Equation class
 """
 
 import numpy as np
-from sandbox.fv import fields
-from sandbox.fv import advective_fluxclasses as afx
-from sandbox.fv import diffusive_fluxclasses as dfx
-from sandbox.fv import equationclass
-from sandbox.fv import ODEintegrators
-import sandbox
-
+from sandbox import fv
+import advective_fluxclasses as afx
+import diffusive_fluxclasses as dfx
+import equationclass
+import ODEintegrators
 
 class Test_Equation( object ):
     def test_init( self ):
@@ -22,9 +20,9 @@ class Test_Equation( object ):
 
     def test_set_variable( self ):
         mesh = np.linspace( 0, 1, 11 )
-        x = fields.Domain( mesh )
+        x = fv.fields.Domain( mesh )
 
-        q = fields.Field1D( 'q', x )
+        q = fv.fields.Field1D( 'q', x )
         q.set_field( np.ones( 10 ) )
 
         eq = equationclass.Equation()
@@ -61,12 +59,12 @@ class Test_Equation( object ):
 
     def test_spatial_operator( self ):
         mesh = np.linspace( 0, 1, 11 )
-        x = fields.Domain( mesh )
+        x = fv.fields.Domain( mesh )
 
-        c = fields.Field1D( 'c', x )
+        c = fv.fields.Field1D( 'c', x )
         c.set_field( np.ones( 10 ) )
 
-        q = fields.Field1D( 'q', x )
+        q = fv.fields.Field1D( 'q', x )
         q.set_field( np.zeros( 10 ) )
 
         fa = afx.AdvectiveFlux1D()
@@ -92,14 +90,14 @@ class Test_Equation( object ):
 
     def test_step( self ):
         mesh = np.linspace( 0, 1, 11 )
-        x = fields.Domain( mesh )
+        x = fv.fields.Domain( mesh )
 
-        c = fields.Field1D( 'c', x )
+        c = fv.fields.Field1D( 'c', x )
         c.set_field( np.ones( 10 ) )
 
-        q = fields.Field1D( 'q', x )
+        q = fv.fields.Field1D( 'q', x )
         q.set_field( np.zeros( 10 ) )
-        assert( type(q) == sandbox.fv.fields.Field1D )
+        assert( type(q) == fv.fields.Field1D )
 
         fa = afx.AdvectiveFlux1D()
         fa.set_mesh( x )

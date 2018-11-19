@@ -1,6 +1,8 @@
 
 make function for dg faceflux
 
+refactor fields.Field1D to use general.fields.Field1D
+
 class for flux term
    needs initialising to calculate stiffness matrix
    needs .apply equivalent which returns the c*K*q - fn

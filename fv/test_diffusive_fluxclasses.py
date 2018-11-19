@@ -6,7 +6,7 @@ Includes tests for DiffusiveFlux1D class
 """
 
 import numpy as np
-import fields
+from sandbox import fv
 import diffusive_fluxclasses as dfx
 
 class Test_DiffusiveFlux1D( object ):
@@ -18,13 +18,13 @@ class Test_DiffusiveFlux1D( object ):
 
     def test_arg_list( self ):
         mesh = np.linspace( 0, 1, 11 )
-        x = fields.Domain( mesh )
+        x = fv.fields.Domain( mesh )
 
         f = dfx.DiffusiveFlux1D()
         f.set_mesh( x )
         f.set_diffusion_coefficient( 0.5 )
 
-        q = fields.Field1D( 'q', x )
+        q = fv.fields.Field1D( 'q', x )
 
         args = f.arg_list ( q )
 
