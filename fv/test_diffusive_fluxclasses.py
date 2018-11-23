@@ -21,7 +21,6 @@ class Test_DiffusiveFlux1D( object ):
         x = fv.fields.Domain( mesh )
 
         f = dfx.DiffusiveFlux1D()
-        f.set_mesh( x )
         f.set_diffusion_coefficient( 0.5 )
 
         q = fv.fields.Field1D( 'q', x )
@@ -29,9 +28,9 @@ class Test_DiffusiveFlux1D( object ):
         args = f.arg_list ( q )
 
         assert len( args ) == 4
-        assert args[0] is q.val_wg
-        assert args[1] is x.dxp_wg
-        assert args[2] is x.dxh_wg
+        assert args[0] is q.val
+        assert args[1] is x.dxp
+        assert args[2] is x.dxh
         assert args[3] is f.dcoeff
 
         return

@@ -47,8 +47,8 @@ class CDS2( dfc.DiffusiveFlux1D ):
         h   = args[2]
         nu  = args[3]
 
-        flux = var[2:-1] - var[1:-2]
-        flux = -nu*flux/dx[1:-1]
+        flux = var[1:] - var[:-1]
+        flux = -nu*flux/dx[:]
 
         return flux
 
@@ -91,8 +91,8 @@ class CDS4( dfc.DiffusiveFlux1D ):
         h   = args[2]
         nu  = args[3]
 
-        flux = ( var[1:-4] - 27.0*var[2:-3] + 27.0*var[3:-2] - var[4:-1] ) / 24.0
-        flux = -nu*flux/dx[2:-2]
+        flux = ( var[:-3] - 27.0*var[1:-2] + 27.0*var[2:-1] - var[3:] ) / 24.0
+        flux = -nu*flux/dx[1:-1]
 
         return flux
 

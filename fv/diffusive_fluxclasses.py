@@ -25,9 +25,9 @@ class DiffusiveFlux1D( flc.Flux1D ):
         return the argument list for flux_calculation method
         """
         args = []
-        args.append( q.val_wg )
-        args.append( self.mesh.dxp_wg )
-        args.append( self.mesh.dxh_wg )
+        args.append( q.val )
+        args.append( q.mesh.dxp )
+        args.append( q.mesh.dxh )
         args.append( self.dcoeff )
         return args
 

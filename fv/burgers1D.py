@@ -38,7 +38,7 @@ u  = fields.UnsteadyField1D( 'u', x )
 u.set_timestep( dt )
 u.set_save_interval( nt=5 )
 
-bcp  = sb.general.fields.BoundaryCondition(  name='periodic' )
+bcp  = sb.general.fields.BoundaryCondition( name='periodic' )
 bcn0 = sb.general.fields.BoundaryCondition( name='naive_adiabatic', indx= 0, val=0 )
 bcn1 = sb.general.fields.BoundaryCondition( name='naive_adiabatic', indx=-1, val=0 )
 
@@ -55,26 +55,23 @@ print('cfl  =', max(u_0)*dt/dx)
 print('dif# =', nu*dt/(dx*dx))
 print('Pe   =', max(u_0)*dx/nu)
 
-# fluxi = afs.UDS1()
-# fluxi.set_mesh( x )
+# fluxi = afs.CDS1()
 # fluxi.set_advection_velocity( u )
 
 fluxi = afc.REAFlux1D()
-fluxi.set_mesh( x )
 fluxi.set_reconstruction( rc.MC2 )
 fluxi.set_reconstruction_radius( 2 )
 fluxi.set_evolution( ev.upwind1 )
 fluxi.set_advection_velocity( u )
 
 fluxv = dfs.CDS2()
-fluxv.set_mesh( x )
 fluxv.set_diffusion_coefficient( nu )
 
 bgrs = equationclass.Equation()
 bgrs.set_variable(  u     )
 bgrs.add_flux_term( fluxi )
-bgrs.add_flux_term( fluxv )
-bgrs.set_time_integration( ODEintegrators.EulerForward1 )
+#bgrs.add_flux_term( fluxv )
+bgrs.set_time_integration( ODEintegrators.RungeKutta4 )
 
 # timestepping
 for n in range(nt):
