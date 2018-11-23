@@ -39,11 +39,12 @@ def view_timeseries1D( field ):
     fig, ax = plt.subplots()
     ax.idx = 0
     ax.field = field
-    ax.set_ylim( [ np.min( field.history ), np.max( field.history ) ] )
+    lo = 0.95*np.min( field.history )
+    hi = 1.05*np.max( field.history )
+    ax.set_ylim( [ lo, hi ] )
     ax.plot( field.mesh.xp, field.history[0,:] )
     fig.show()
 
     fig.canvas.mpl_connect(    'scroll_event', process_scroll )
     fig.canvas.mpl_connect( 'key_press_event', process_key    )
-
 
