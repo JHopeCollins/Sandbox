@@ -23,20 +23,9 @@ class Domain( sb.general.fields.Domain ):
         """
         super( Domain, self ).__init__( mesh )
 
-        self.xh_wg = np.append( self.xh, self.xh[-1] + self.dxh[-1] )
-        self.xh_wg = np.append( self.xh[0] - self.dxh[0], self.xh_wg )
+        self.xp = 0.5*( self.xh[:-1] + self.xh[1:] )
 
-        self.dxh_wg = np.append( self.dxh, self.dxh[-1] )
-        self.dxh_wg = np.append( self.dxh[0], self.dxh_wg )
-
-        self.xp_wg = 0.5*( self.xh_wg[:-1] + self.xh_wg[1:] )
-
-        self.dxp_wg = np.diff( self.xp_wg )
-
-        self.xp  = self.xp_wg[1:-1]
-        self.xh  = self.xh_wg[1:-1]
-        self.dxh = self.dxh_wg[1:-1]
-        self.dxp = self.dxp_wg[1:-1]
+        self.dxp = np.diff( self.xp )
 
         return
 
@@ -52,92 +41,7 @@ class Field1D( sb.general.fields.Field1D ):
         initialise field with a name, mesh, and empty nodal value arrays
         """
         super( Field1D, self ).__init__( name, mesh )
-        self.val_wg = np.zeros_like(self.mesh.xp_wg)
-        self.val    = self.val_wg[1:-1]
         return
-
-    def set_field( self, data ):
-        """
-        sets the nodal values to the value of data, and updates the ghost cells
-        """
-        super( Field1D, self ).set_field( data )
-        self.update_ghosts()
-        return
-
-    def update( self, dval ):
-        """
-        update the nodal values by the amount dval
-        """
-        super( Field1D, self ).update( dval )
-        self.update_ghosts()
-        return
-
-    def add_boundary_condition( self, bc ):
-        """
-            Add an existing boundary condition to the field.
-
-            if location of input boundary condition already has a boundary condition, will replace with new one
-
-            input arguments:
-            bc: must be BoundaryCondition instance
-        """
-        super( Field1D, self ).add_boundary_condition( bc )
-        self.update_ghosts( )
-        return
-
-    def update_ghosts( self ):
-        """
-        update value of ghost cells at boundaries
-        """
-        for bc in self.bconds:
-            update_func = getattr( self, bc.name )
-            update_func( bc )
-        return
-
-    def periodic( self, bc):
-        """
-        set ghose cell values for periodic boundary condition
-        """
-        self.val_wg[ 0] = self.val[-1]
-        self.val_wg[-1] = self.val[ 0]
-        return
-
-    def dirichlet( self, bc ):
-        """
-        set ghost cell value for dirichlet boundary condition
-        """
-        ghost = bc.indx
-        in1 = mth.step_into_array( bc.indx, 1 )
-
-        diff  = self.val_wg[in1] - bc.val
-
-        self.val_wg[ghost] = bc.val - diff
-        return
-
-    def neumann( self, bc ):
-        """
-        set ghost cell value for neumann boundary condition
-        """
-        dn = bc.indx*2+1
-
-        ghost = bc.indx
-        in1 = mth.step_into_array( bc.indx, 1 )
-
-        dx = self.mesh.dxp_wg[ghost]
-
-        self.val_wg[ghost] = self.val_wg[in1] - dn*bc.val*dx
-        return
-
-    def naive_adiabatic( self, bc ):
-        """
-        set ghost cell value for neumann boundary condition
-        """
-        ghost = bc.indx
-        in2 = mth.step_into_array( bc.indx, 2 )
-        in1 = mth.step_into_array( bc.indx, 1 )
-
-        self.val_wg[in1  ] = self.val_wg[in2]
-        self.val_wg[ghost] = self.val_wg[in2]
 
 
 class UnsteadyField1D( Field1D ):
@@ -166,7 +70,7 @@ class UnsteadyField1D( Field1D ):
     def set_save_interval( self, dt=None, nt=None ):
         if   dt == None and nt == None:
             return
-        elif dt != None and nt != None:
+        elif ( dt != None ) and ( nt != None ):
             print( 'UnsteadyField1D '+self.name+'.set_save_interval : cannot specify both dt and nt' )
             return
         elif dt== None:
@@ -175,6 +79,21 @@ class UnsteadyField1D( Field1D ):
             self.save_interval = int( round( dt / self.dt ) )
 
         return
+
+    def copy( self ):
+        """
+        returns a copy (separate instance) of the field with identical mesh, nodal values, boundary conditions and time steps
+        """
+        new = super( UnsteadyField1D, self ).copy()
+        new.set_timestep( self.dt )
+        new.set_save_interval( nt=self.save_interval )
+        new.t = self.t
+
+        new.history = np.zeros_like( self.history )
+
+        new.history[:,:] = self.history[:,:]
+
+        return new
 
     def update( self, dvar ):
         super( UnsteadyField1D, self ).update( dvar )
