@@ -20,11 +20,11 @@ def PCM1( u, dx, h ):
 
 def minmod2( u, dx, h ):
     """
-        returns left and right cell face values for piecewise linear reconstruction with minmod choice of slopes
+        returns left and right cell face values for piecewise linear reconstruction with minmod slope choice
 
         reconstruction_radius = 2
 
-        minmod chooses slope of linear reconstruction to be minimum of neighbouring slopes, or zero if cell at minimum/maximum (when slopes of opposite sign)
+        minmod chooses slope to be minimum of neighbouring slopes, or zero if cell at minimum/maximum (when slopes of opposite sign)
     """
 
     sigmaL = ( u[1:-1] - u[ :-2] ) / dx[ :-1]
@@ -40,11 +40,11 @@ def minmod2( u, dx, h ):
 
 def superbee2( u, dx, h ):
     """
-        returns left and right cell face values for piecewise linear reconstruction with superbee choice of slopes
+        returns left and right cell face values for piecewise linear reconstruction with superbee slope choice 
 
         reconstruction_radius = 2
 
-        superbee chooses slope of linear reconstruction to be minimum of each one-sided slope compared with twice the other one-sided slope, or zero if cell at minimum/maximum (when slopes of opposite sign)
+        superbee chooses slope to be minimum of each one-sided slope compared with twice the other one-sided slope, or zero if cell at minimum/maximum (when slopes of opposite sign)
         This choice of slopes tends to choose the larger slope in smooth regions, but still the smaller slope near discontinuities
     """
 
@@ -68,7 +68,7 @@ def MC2( u, dx, h ):
 
         reconstruction_radius = 2
 
-        MC chooses slope of linear reconstruction to be minimum of twice each one-sided slope or the central difference slope, or zero if cell at minimum/maximum (when slopes of opposite sign)
+        MC chooses slope to be minimum of twice each one-sided slope or the central difference slope, or zero if cell at minimum/maximum (when slopes of opposite sign)
         This choice of slopes tends to choose the central slope in smooth regions, which results in better resolution than the superbee choice, which tends to artificially steepen smooth regions
     """
 

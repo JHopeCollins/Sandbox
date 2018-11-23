@@ -47,11 +47,11 @@ class CDS2( afc.AdvectiveFlux1D ):
         h   = args[2]
         u   = args[3]
 
-        wl = 0.5*h[1:-2]/dx[1:-1]
+        wl = 0.5*h[:-1]/dx[:]
         wr = 1 - wl
 
-        u_cellface   = ( wl*u[  1:-2] + wr*u[  2:-1] )
-        var_cellface = ( wl*var[1:-2] + wr*var[2:-1] )
+        u_cellface   = ( wl*u[  :-1] + wr*u[  1:] )
+        var_cellface = ( wl*var[:-1] + wr*var[1:] )
 
         flux = u_cellface*var_cellface
 
@@ -125,10 +125,10 @@ class CDS2_2( afc.AdvectiveFlux1D ):
         h   = args[2]
         u   = args[3]
 
-        fl = u[1:-2]*var[1:-2]
-        fr = u[2:-1]*var[2:-1]
+        fl = u[ :-1]*var[ :-1]
+        fr = u[1:  ]*var[1:  ]
 
-        wl = 0.5*h[1:-2]/dx[1:-1]
+        wl = 0.5*h[:-1]/dx[:]
         wr = 1 - wl
 
         flux = wl*fl + wr*fr
@@ -284,6 +284,7 @@ class QUICK3( afc.UpwindFlux1D ):
         flux = f_u + w1*( f_d - f_u ) + w2*( f_u - f_uu )
 
         return flux
+
 
 class PressureUDS1( afc.PressureFlux1D ):
     def __init__( self ):

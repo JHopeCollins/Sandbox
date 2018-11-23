@@ -20,7 +20,6 @@ class Test_AdvectiveFlux1D( object ):
         c.set_field( np.ones( 10 ) )
 
         f = afx.AdvectiveFlux1D()
-        f.set_mesh( x )
         f.set_advection_velocity( c )
 
         assert f.vel is c
@@ -37,16 +36,15 @@ class Test_AdvectiveFlux1D( object ):
         q.set_field( np.zeros( 10 ) )
 
         f = afx.AdvectiveFlux1D()
-        f.set_mesh( x )
         f.set_advection_velocity( c )
 
         args = f.arg_list( q )
 
         assert len( args ) == 4
-        assert args[0] is q.val_wg
-        assert args[1] is x.dxp_wg
-        assert args[2] is x.dxh_wg
-        assert args[3] is c.val_wg
+        assert args[0] is q.val
+        assert args[1] is x.dxp
+        assert args[2] is x.dxh
+        assert args[3] is c.val
 
         return
 
@@ -55,8 +53,8 @@ class Test_UpwindFlux1D( object ):
     def test_cell_face_direction( self ):
         f = afx.UpwindFlux1D()
 
-        # uface           g   -  +  -   -    +
-        u = np.asarray( [0, -2, 1, 1, -2, -3, 5, 0] )
+        # uface            -  +  -   -    +
+        u = np.asarray( [-2, 1, 1, -2, -3, 5] )
         d = f.cell_face_direction( u )
 
         assert np.all( d == [-1, 1, -1, -1, 1] )
@@ -65,36 +63,36 @@ class Test_UpwindFlux1D( object ):
     def test_cell_indxs( self ):
         f = afx.UpwindFlux1D()
 
-        u = np.asarray( [0, -2, 1, 1, -2, -3, 5, 0] )
+        u = np.asarray( [0, -2, 1, 1, -2, -3, 5] )
         i = f.cell_indxs( u )
 
-        assert np.all( i == [1, 2, 3, 4, 5] )
+        assert np.all( i == [0, 1, 2, 3, 4, 5] )
         return
 
     def test_upwind_indx( self ):
         f = afx.UpwindFlux1D()
 
-        u = np.asarray( [0, -2, 1, 1, -2, -3, 5, 0] )
+        u = np.asarray( [-2, 1, 1, -2, -3, 5] )
         i = f.cell_indxs( u )
         d = f.cell_face_direction( u )
 
         up1 = f.upwind_indx( i, d, 1 )
         up2 = f.upwind_indx( i, d, 2 )
-        assert np.all( up1 == [2, 2, 4, 5, 5] )
-        assert np.all( up2 == [3, 1, 5, 6, 4] )
+        assert np.all( up1 == [1, 1, 3, 4, 4] )
+        assert np.all( up2 == [2, 0, 4, 5, 3] )
         return
 
     def test_downwind_indx( self ):
         f = afx.UpwindFlux1D()
 
-        u = np.asarray( [0, -2, 1, 1, -2, -3, 5, 0] )
+        u = np.asarray( [-2, 1, 1, -2, -3, 5] )
         i = f.cell_indxs( u )
         d = f.cell_face_direction( u )
 
         down1 = f.downwind_indx( i, d, 1 )
         down2 = f.downwind_indx( i, d, 2 )
-        assert np.all( down1 == [1, 3, 3, 4, 6] )
-        assert np.all( down2 == [0, 4, 2, 3, 7] )
+        assert np.all( down1 == [ 0, 2, 2, 3, 5] )
+        assert np.all( down2 == [-1, 3, 1, 2, 6] )
         return
 
 
@@ -134,6 +132,6 @@ class Test_REAFlux1D( object ):
 
         flux = f.flux_calculation( [q, dx, h, v] )
 
-        assert np.all( flux == [2, -12] )
+        assert np.all( flux == [1, 2, -12, 5] )
         return
 

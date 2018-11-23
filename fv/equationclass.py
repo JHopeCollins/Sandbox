@@ -39,8 +39,6 @@ class Equation( object ):
         return np.diff( flux ) / q.mesh.dxh
 
     def step(self, dt ):
-        # dq = self.time_stepper( dt, self.q, self.spatial_operator )
-        # self.q.update( dq )
         self.calculate_update( dt )
         self.apply_update()
         return

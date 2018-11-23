@@ -68,11 +68,9 @@ class Test_Equation( object ):
         q.set_field( np.zeros( 10 ) )
 
         fa = afx.AdvectiveFlux1D()
-        fa.set_mesh( x )
         fa.set_advection_velocity( c )
 
         fd = dfx.DiffusiveFlux1D()
-        fd.set_mesh( x )
         fd.set_diffusion_coefficient( 0.5 )
 
         eq = equationclass.Equation()
@@ -100,11 +98,9 @@ class Test_Equation( object ):
         assert( type(q) == fv.fields.Field1D )
 
         fa = afx.AdvectiveFlux1D()
-        fa.set_mesh( x )
         fa.set_advection_velocity( c )
 
         fd = dfx.DiffusiveFlux1D()
-        fd.set_mesh( x )
         fd.set_diffusion_coefficient( 0.5 )
 
         eq = equationclass.Equation()
