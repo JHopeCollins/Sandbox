@@ -16,24 +16,9 @@ URGENT---------------------URGENT
 
 DOCSTRINGS needs updating, several are out of date, especially where flux function arguments have been changed
 
-boundary conditions
-   Whole load of indexing trickery across different files to deal with ghost cells.
-      Work out what/where they all are and come up with a consistent approach.
-      Try and deal with ghost cells as far up the abstraction as possible, where possible (ie in or close to Flux1D class). I don't want to have to think about them unless I'm writing a boundary condition function for fluxes on coupled equations - they're a pain and I don't like them.
-   Change to normal field.val attributes not including ghosts, and separate field.val_wg (with ghosts) attribute probably nicer than having val_noghosts as normal interface for actual domain extent
-      Same for Domain.(x, h, dx) etc
-
 array lengths
    work out properly how long arrays should be (particularly flux arrays) at each stage, everywhere through the run.
    make tests for this for each implementation class, to avoid all abstract class unit tests passing, and actual runs failing
-
-GHOST CELLS
-   work out linear algebra for calculating ghost cells for finite difference stencils - can it be generalised? see Moin numerical book
-      would this need to be in the specific flux class because it is unique to stencil? or keep it in the field class where .update_ghosts is?
-   what happens if you do a lower order scheme across ghost cells calculated for a higher order - or even just different - scheme?
-   how best to store and access the number of ghosts for cases with flux stencils of different widths?
-
-flux shouldn't have a mesh attribute, should use q.mesh
 
 URGENT---------------------URGENT
 
@@ -64,6 +49,7 @@ SystemOfEquations subclasses
 REA advective fluxes
       evolution schemes - burgers equation
          godunov method for burgers equation
+         centred/upwind parameterised alpha flux
       evolution schemes - euler (flux difference splitting)
          Godunov exact Riemann flux
          Roe approximate Riemann flux
