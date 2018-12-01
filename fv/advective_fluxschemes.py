@@ -24,7 +24,6 @@ class CDS2( afc.AdvectiveFlux1D ):
         parameter_names:
             None
     """
-
     def __init__( self ):
         super( CDS2, self ).__init__()
         self.stencil_radius = 1

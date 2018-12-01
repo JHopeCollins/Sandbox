@@ -10,6 +10,7 @@
    reconstructions.py       second order functions need testing
    advective_fluxschemes    needs starting
    diffusive_fluxschemes    needs starting
+   non-periodic bc methods  need  starting
 
 
 URGENT---------------------URGENT
@@ -27,7 +28,7 @@ URGENT---------------------URGENT
 MEDIUM-TERM----------------MEDIUM-TERM
 
 post-processing field
-   run field class is bare minimum to run
+   make runtime field class bare minimum to run
    post-processing class has niceties like plotting, rms calculation, vorticity calculation etc
 
 plotting

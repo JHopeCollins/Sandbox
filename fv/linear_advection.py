@@ -9,16 +9,16 @@ import matplotlib.pyplot as plt
 import sandbox as sb
 
 # Parameters
-nx  = 101
-nt  = 100
+nx  = 51
 cfl = 0.5
-T   = 1.0
-nu  = 0.002
+T   = 1.5
+nu  = 0.0075
 
 # boundary conditions
-bc0 = sb.general.fields.BoundaryCondition( name='periodic' )
-bc0 = sb.general.fields.BoundaryCondition( name='naive_adiabatic', indx= 0 )
+# bc0 = sb.general.fields.BoundaryCondition( name='periodic' )
+# bc0 = sb.general.fields.BoundaryCondition( name='naive_adiabatic', indx= 0 )
 bc0 = sb.general.fields.BoundaryCondition( name='dirichlet',       indx= 0, val=2.0 )
+# bc1 = sb.general.fields.BoundaryCondition( name='dirichlet',       indx=-1, val=2.0 )
 bc1 = sb.general.fields.BoundaryCondition( name='naive_outflow',   indx=-1 )
 
 # waves travel across the domain in one period
@@ -33,14 +33,17 @@ dx = min( x.dxh )
 dt = cfl * dx / c0
 nt = int( T / dt )
 
+print('dif# =', nu*dt/(dx*dx))
+
 # advected scalar
 q = sb.fv.fields.UnsteadyField1D( 'q', x )
-q.add_boundary_condition( bc0 )
 q.add_boundary_condition( bc1 )
+q.add_boundary_condition( bc0 )
 q.set_timestep( dt )
-q.set_save_interval( dt=0.005 )
+q.set_save_interval( nt=1 )
 
 # initial conditions
+q0 = np.sin( x.xp )
 q0 = 2.0 - x.xp
 q.set_field( q0 )
 
@@ -59,7 +62,7 @@ smooth.set_diffusion_coefficient( nu )
 advEq = sb.fv.equationclass.Equation()
 advEq.set_variable( q )
 advEq.add_flux_term( flux   )
-# advEq.add_flux_term( smooth )
+advEq.add_flux_term( smooth )
 advEq.set_time_integration( sb.fv.ODEintegrators.RungeKutta4 )
 
 for n in range( nt ):

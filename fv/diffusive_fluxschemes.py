@@ -52,6 +52,27 @@ class CDS2( dfc.DiffusiveFlux1D ):
 
         return flux
 
+    def dirichlet( self, bc, q, flux ):
+        """
+        apply dirichlet boundary condition on q at bc.indx
+        reconstruct ghost cell and apply flux calculation across boundary
+        """
+        qb = np.zeros( 2 )
+
+        inside  = bc.indx+1
+        outside = bc.indx
+
+        qb[  inside ] = q[ bc.indx ]
+        qb[ outside ] = 0.5*( qb[inside] + bc.val )
+
+        dx = [ q.mesh.dxp[ bc.indx ] ]
+
+        args = [ qb, dx, [], self.dcoeff ]
+        fb = self.flux_calculation( args )
+
+        flux[ bc.indx ] = fb
+        return
+
 
 class CDS4( dfc.DiffusiveFlux1D ):
     """

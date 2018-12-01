@@ -29,7 +29,7 @@ nt = 1000
 L  = 2.*np.pi
 dx = L/(nx-1)
 nu = 0.17
-dt = 0.001
+dt = 0.01
 t  = 0
 
 x  = np.linspace(0, L, nx)
@@ -69,8 +69,8 @@ fluxv.set_diffusion_coefficient( nu )
 
 bgrs = equationclass.Equation()
 bgrs.set_variable(  u     )
-bgrs.add_flux_term( fluxi )
-#bgrs.add_flux_term( fluxv )
+# bgrs.add_flux_term( fluxi )
+bgrs.add_flux_term( fluxv )
 bgrs.set_time_integration( ODEintegrators.RungeKutta4 )
 
 # timestepping
