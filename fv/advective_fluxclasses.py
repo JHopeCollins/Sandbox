@@ -31,6 +31,19 @@ class AdvectiveFlux1D( flc.Flux1D ):
         args.append( self.vel.val )
         return args
 
+    def naive_outflow( self, bc, q, flux ):
+        """
+        freeze the solution at the outflow boundary and convect out at constant velocity
+        """
+        r = self.stencil_radius
+        i = mth.step_into_array( bc.indx, r-1 )
+        c = self.vel[i]
+
+        for i in range( 0, self.stencil_radius ):
+            idx = mth.step_into_array( bc.indx, i )
+            flux[ idx ] = c * q[ idx ]
+        return
+        
 
 class REAFlux1D( AdvectiveFlux1D ):
     """

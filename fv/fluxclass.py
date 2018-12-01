@@ -100,12 +100,13 @@ class Flux1D( object ):
 
         return
 
-    def naive_adiabatic(  self, bc, q, flux ):
+    def naive_adiabatic( self, bc, q, flux ):
         """
         apply zero flux at boundary cells
         """
-        for i in range( -self.stencil_radius, self.stencil_radius ):
-            flux[i] = 0
+        for i in range( 0, self.stencil_radius ):
+            idx = mth.step_into_array( bc.indx, i )
+            flux[ idx ] = 0
         return
 
     def arg_list( self, q ):

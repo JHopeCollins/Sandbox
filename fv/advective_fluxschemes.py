@@ -181,41 +181,27 @@ class UDS1( afc.UpwindFlux1D ):
 
         return flux
 
-    def dirichlet( self, bc, flux, args ):
+    def dirichlet( self, bc, q, flux ):
         """
-            Apply dirichlet boundary conditions.
-
-            input arguments:
-            bc_indx: index of boundary to apply condition to
-            bc_val: value of var at boundary
-            var: array of the variable being transported by the flux
-            other_var_list: list of arrays of other flow variables needed for the flux calculation
-            par_list: list of parameters needed for the flux calculation
-
-            returns:
-            fi_list: list of tuples. Each tuple contains a flux value (position 0 in tuple) and the index of the global flux array the value corresponds to (position 1 in tuple)
+        apply dirichlet boundary condition on q at bc.indx
+        assuming advection velocity in constant across the boundary
         """
-        var = args[0]
-        dx  = args[1]
-        h   = args[2]
-        u   = args[3]
+        qb = np.zeros( 2 )
+        vb = np.zeros( 2 )
 
-        ghost = bc.indx
-        first = mth.step_into_array( bc.indx, 1 )
+        inside  = bc.indx+1
+        outside = bc.indx
 
-        dn = bc.indx*2+1
-        direction = np.sign( u[ghost] + u[first] ).astype( int )
+        qb[ inside ] = q[        bc.indx ]
+        vb[ inside ] = self.vel[ bc.indx ]
 
-        var_boundary = bc.val
-        # if dn == direction:
-        #     upwind = ghost
-        # else:
-        #     upwind = first
-        upwind = ( dn*direction - 1 ) / ( -2 )
-        upwind = mth.step_into_array( bc.indx, upwind )
+        qb[ outside ] = bc.val
+        vb[ outside ] = vb[ inside ]
 
-        flux[ bc.index ] = u[upwind]*bc.val
+        args=[ qb, [], [], vb ]
+        fb = self.flux_calculation( args )
 
+        flux[ bc.indx ] = fb
         return
 
 

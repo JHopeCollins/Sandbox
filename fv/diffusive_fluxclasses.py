@@ -31,4 +31,12 @@ class DiffusiveFlux1D( flc.Flux1D ):
         args.append( self.dcoeff )
         return args
 
+    def naive_outflow( self, bc, q, flux ):
+        """
+        diffusion condition for freezing the solution at the outflow boundary and convecting out at constant velocity
+        """
+        self.naive_adiabatic( bc, q, flux )
+        return
+        
+
 

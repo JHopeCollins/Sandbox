@@ -55,14 +55,14 @@ print('cfl  =', max(u_0)*dt/dx)
 print('dif# =', nu*dt/(dx*dx))
 print('Pe   =', max(u_0)*dx/nu)
 
-# fluxi = afs.CDS1()
-# fluxi.set_advection_velocity( u )
-
-fluxi = afc.REAFlux1D()
-fluxi.set_reconstruction( rc.MC2 )
-fluxi.set_reconstruction_radius( 2 )
-fluxi.set_evolution( ev.upwind1 )
+fluxi = afs.CDS2()
 fluxi.set_advection_velocity( u )
+
+# fluxi = afc.REAFlux1D()
+# fluxi.set_reconstruction( rc.MC2 )
+# fluxi.set_reconstruction_radius( 2 )
+# fluxi.set_evolution( ev.upwind1 )
+# fluxi.set_advection_velocity( u )
 
 fluxv = dfs.CDS2()
 fluxv.set_diffusion_coefficient( nu )
