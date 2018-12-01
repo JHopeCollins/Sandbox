@@ -6,28 +6,29 @@ script for dg linear advection wave using dg classes
 
 import numpy as np
 import matplotlib.pyplot as plt
-from dg import polys
-from dg import fields
-from fv import evolutions
-from fv import ODEintegrators
+import sandbox as sb
+from sandbox.dg import polys
+from sandbox.dg import fields
+from sandbox.fv import evolutions
+from sandbox.fv import ODEintegrators
 
-nh = 2
-p  = 8
+nh = 4
+p  = 3
 
 T  = 10
 L  = 2*np.pi
 
 c   = 2*np.pi
-cfl = 0.025
+cfl = 0.05
 
 flux = evolutions.upwind1
-step = ODEintegrators.RungeKutta4
+step = ODEintegrators.EulerForward1
 
 mesh = np.linspace( 0, L, nh+1 )
 mesh = fields.Domain( mesh )
 mesh.set_expansion( p )
 
-dx = np.min( mesh.dxh )
+dx = np.min( mesh.dxp )
 dt = cfl * dx / c
 nt = int( T/dt )
 

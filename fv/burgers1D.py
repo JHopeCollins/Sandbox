@@ -74,7 +74,7 @@ bgrs.add_flux_term( fluxi )
 bgrs.set_time_integration( ODEintegrators.RungeKutta4 )
 
 # timestepping
-for n in range(nt):
+for n in range( nt ):
     bgrs.step( dt )
 
 u.plot_history()

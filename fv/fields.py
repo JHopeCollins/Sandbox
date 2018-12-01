@@ -32,16 +32,11 @@ class Domain( sb.general.fields.Domain ):
 
 class Field1D( sb.general.fields.Field1D ):
     """
-        Class for 1D finite volume scalar fields
+    Class for 1D finite volume scalar fields
 
-        field consists of array of value of the field, and list of boundary conditions
+    field consists of array of value of the field, and list of boundary conditions
     """
-    def __init__( self, name, mesh ):
-        """
-        initialise field with a name, mesh, and empty nodal value arrays
-        """
-        super( Field1D, self ).__init__( name, mesh )
-        return
+    pass
 
 
 class UnsteadyField1D( Field1D ):

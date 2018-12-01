@@ -13,6 +13,7 @@ class Domain( object ):
         """
         initialise Domain with cell vertices, cell sizes and number of cells
         """
+        super( Domain, self ).__init__( )
         self.xh  = xh.copy()
         self.xp  = xh.copy()
         self.dxh = np.diff( self.xh )
@@ -30,6 +31,7 @@ class BoundaryCondition( object ):
         val : value of boundary condition, eg for dirichlet condition
     """
     def __init__( self, name=None, indx=None, val=None ):
+        super( BoundaryCondition, self ).__init__( )
         self.name = name
         self.indx = indx
         self.val  = val
@@ -54,6 +56,7 @@ class Field1D( object ):
         """
         initialise field with a name, mesh, empty nodal value array and boundary condition list
         """
+        super( Field1D, self ).__init__( )
         self.name = name
         self.mesh = mesh
         self.val  = np.zeros_like( self.mesh.xp )

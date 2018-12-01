@@ -200,10 +200,8 @@ def step_into_array( boundary, nsteps ):
     return:
     indx: (0+nsteps) or (-1-nsteps)
     """
-
     direction = boundary*2 + 1
     indx = boundary + nsteps*direction
-
     return indx
 
 
@@ -222,7 +220,7 @@ def upwind_idx_obsolete(indxs, direction):
     return upwind
 
 
-def upupwind_idx(indxs, direction):
+def upupwind_idx_obsolete(indxs, direction):
     upupwind = indxs - ((direction - 1)/2)*3 - 1
     return upupwind
 

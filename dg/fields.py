@@ -59,6 +59,8 @@ class Domain( general.fields.Domain ):
             self.Lm1[ kL : kR ] = tLm1
             self.Lp1[ kL : kR ] = tLp1
 
+        self.dxp = np.diff( self.xp )
+
         return
 
 
@@ -72,6 +74,7 @@ class Field1D( object ):
         """
         initialise field with a name, mesh, and empty nodal value array
         """
+        super( Field1D, self ).__init__( )
         self.name   = name
         self.mesh   = mesh
         self.p      = mesh.p
@@ -93,6 +96,16 @@ class Field1D( object ):
         self.val[:] += dval[:]
         return
 
+    def copy( self ):
+        """
+        returns a copy (separate instance) of the field with identical mesh, nodal values and boundary conditions
+        """
+        g = type(self)( self.name, self.mesh )
+        g.set_field( self.val )
+        for bc in self.bconds:
+            g.add_boundary_condition( bc )
+        return g
+
 
 class UnsteadyField1D( Field1D ):
     """
@@ -104,7 +117,7 @@ class UnsteadyField1D( Field1D ):
         super( UnsteadyField1D, self ).__init__( name, mesh )
         self.dt = None
         self.nt = 0
-        self.t  = 0
+        self.t  = 0.0
         self.save_interval = 1
         self.history = np.zeros( (1, len( self.val ) ) )
         return
