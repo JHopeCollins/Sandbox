@@ -7,22 +7,31 @@ Each function takes arrays of left and right values of advection velocity and ad
 
 import numpy as np
 
-def upwind1( qL, qR, vL, vR, ):
-    """
-    returns face flux calculated from upwind value on face
-    """
+class Evolution1D( object ):
+    def __init__( self ):
+        super( Evolution1D, self ).__init__()
 
-    flux = np.zeros_like( qL )
 
-    direction = np.sign( vL + vR ).astype( int )
+class UpwindEvolution1D( Evolution1D ):
+    def direction(self,  vL, vR ):
+        d = np.sign( vL + vR ).astype( int )
+        return d
 
-    mask = direction ==  1
-    flux[ mask ] = qL[ mask ] * vL[ mask ]
 
-    mask = direction == -1
-    flux[ mask ] = qR[ mask ] * vR[ mask ]
+class Upwind1( UpwindEvolution1D ):
+    def evolve( self, qL, qR, vL, vR ):
+        flux = np.zeros_like( qL )
 
-    return flux
+        direction = self.direction( vL, vR )
+
+        mask = direction ==  1
+        flux[ mask ] = qL[ mask ] * vL[ mask ]
+
+        mask = direction == -1
+        flux[ mask ] = qR[ mask ] * vR[ mask ]
+
+        return flux
+
 
 def LaxFriedrichs1( qL, qR, vL, vR, dx, dt ):
     """

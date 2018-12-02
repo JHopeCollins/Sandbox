@@ -52,16 +52,13 @@ class REAFlux1D( AdvectiveFlux1D ):
         subclasses each define a numerical flux from the cell face jump. requires a reconstruction method to calculate this jump
     """
 
-    def set_reconstruction_radius( self, r ):
-        self.stencil_radius = r
-        return
-
     def set_reconstruction( self, r ):
-        self.reconstruct = r
+        self.rec = r
+        self.stencil_radius = self.rec.stencil_radius
         return
 
     def set_evolution( self, e ):
-        self.evolve = e
+        self.ev = e
         return
 
     def flux_calculation( self, args ):
@@ -70,15 +67,27 @@ class REAFlux1D( AdvectiveFlux1D ):
         dxh = args[2]
         v   = args[3]
 
-        qL, qR = self.reconstruct( q, dxp, dxh )
-        vL, vR = self.reconstruct( v, dxp, dxh )
+        qL, qR = self.rec.reconstruct( q, dxp, dxh )
+        vL, vR = self.rec.reconstruct( v, dxp, dxh )
 
-        flux = self.evolve( qL,
-                            qR,
-                            vL,
-                            vR)
+
+        flux = self.ev.evolve( qL,
+                               qR,
+                               vL,
+                               vR)
 
         return flux
+
+    def dirichlet( self, bc, q, flux ):
+        # reconstruct qb
+
+        # test what boundary condition is on self.vel
+        # reconstruct vb
+
+        #evolve over qb, vb
+
+        # update boundary fluxes
+        return
 
 
 class UpwindFlux1D( AdvectiveFlux1D ):

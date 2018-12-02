@@ -16,10 +16,10 @@ class Flux1D( object ):
         Cannot be used as is, only to be used as parent for specific flux type class.
 
         Specific flux class must define at least the following additional methods:
-        __init__: must at least create an empty list to store boundary conditions (self.bconds), and define the stencil width (self.stencil_radius)
+        __init__: must at least define the stencil width (self.stencil_radius),
         flux_calculation: applies the normal flux calculation (not at domain boundaries),
-        Can also define the following methods, depending on need:
 
+        Can also define the following methods, depending on need:
         dirichlet: applies a dirichlet boundary condition at the specified boundary
         neumann: applies a neumann boundary condition at the specified boundary
         robin: applies a robin boundary condition at the specified boundary

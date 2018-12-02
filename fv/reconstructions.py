@@ -8,79 +8,113 @@ Each function takes in a single array of cell average values and returns left an
 import numpy as np
 import maths_utils as mth
 
-def PCM1( u, dx, h ):
-    """
-    returns left and right cell face values for piecewise constant reconstruction
 
-    reconstruction_radius = 1
-    """
-    uR = u[1:]
-    uL = u[:-1]
-    return uL, uR
+class Reconstruction1D( object ):
+    def __init__( self ):
+        super( Reconstruction1D, self ).__init__()
+        self.stencil_radius = None
+        return
 
-def minmod2( u, dx, h ):
-    """
+
+class SecondOrderReconstruction1D( Reconstruction1D ):
+    def __init__( self ):
+        super( Reconstruction1D, self ).__init__()
+        self.stencil_radius = 2
+        return
+
+    def dirichlet( self, bc, q ):
+        pass
+
+    def neumann( self, bc, q ):
+        pass
+
+
+class PCM1( Reconstruction1D ):
+    def __init__( self ):
+        super( PCM1, self ).__init__()
+        self.stencil_radius = 1
+        return
+
+    def reconstruct( self, q, dx, h ):
+        """
+        returns left and right cell face values for piecewise constant reconstruction
+        """
+        qR = q[1:]
+        qL = q[:-1]
+        return qL, qR
+
+    def dirichlet( self, bc, q ):
+        qb = np.zeros( 2 )
+
+        inside  = bc.indx+1
+        outside = bc.indx
+
+        qb[ inside ] = q[ bc.indx ]
+        qb[ outside ] = bc.val
+        return qb
+
+
+class minmod2( SecondOrderReconstruction1D ):
+    def reconstruct( self, q, dx, h ):
+        """
         returns left and right cell face values for piecewise linear reconstruction with minmod slope choice
 
-        reconstruction_radius = 2
-
         minmod chooses slope to be minimum of neighbouring slopes, or zero if cell at minimum/maximum (when slopes of opposite sign)
-    """
+        """
 
-    sigmaL = ( u[1:-1] - u[ :-2] ) / dx[ :-1]
-    sigmaR = ( u[2:  ] - u[1:-1] ) / dx[1:  ]
+        sigmaL = ( q[1:-1] - q[ :-2] ) / dx[ :-1]
+        sigmaR = ( q[2:  ] - q[1:-1] ) / dx[1:  ]
 
-    sigma  = mth.minmod( sigmaL, sigmaR )
+        sigma  = mth.minmod( sigmaL, sigmaR )
 
-    du = 0.5*sigma*h[1:-1]
-    uR = u[ 2:-1 ] - du[1:  ]
-    uL = u[ 1:-2 ] + du[ :-1]
+        dq = 0.5*sigma*h[1:-1]
+        qR = q[ 2:-1 ] - dq[1:  ]
+        qL = q[ 1:-2 ] + dq[ :-1]
 
-    return uL, uR
+        return qL, qR
 
-def superbee2( u, dx, h ):
-    """
+
+class superbee2( SecondOrderReconstruction1D ):
+    def reconstruct( self, q, dx, h ):
+        """
         returns left and right cell face values for piecewise linear reconstruction with superbee slope choice 
-
-        reconstruction_radius = 2
-
+        
         superbee chooses slope to be minimum of each one-sided slope compared with twice the other one-sided slope, or zero if cell at minimum/maximum (when slopes of opposite sign)
         This choice of slopes tends to choose the larger slope in smooth regions, but still the smaller slope near discontinuities
-    """
+        """
+    
+        sigmaL = ( q[1:-1] - q[ :-2] ) / dx[ :-1]
+        sigmaR = ( q[2:  ] - q[1:-1] ) / dx[1:  ]
+    
+        sigma1  = mth.minmod(   sigmaL, 2*sigmaR )
+        sigma2  = mth.minmod( 2*sigmaL,   sigmaR )
+    
+        sigma = mth.maxmod( sigma1, sigma2 )
+    
+        dq = 0.5*sigma*h[1:-1]
+        qR = q[ 2:-1 ] - dq[1:  ]
+        qL = q[ 1:-2 ] + dq[ :-1]
+    
+        return qL, qR
 
-    sigmaL = ( u[1:-1] - u[ :-2] ) / dx[ :-1]
-    sigmaR = ( u[2:  ] - u[1:-1] ) / dx[1:  ]
 
-    sigma1  = mth.minmod(   sigmaL, 2*sigmaR )
-    sigma2  = mth.minmod( 2*sigmaL,   sigmaR )
-
-    sigma = mth.maxmod( sigma1, sigma2 )
-
-    du = 0.5*sigma*h[1:-1]
-    uR = u[ 2:-1 ] - du[1:  ]
-    uL = u[ 1:-2 ] + du[ :-1]
-
-    return uL, uR
-
-def MC2( u, dx, h ):
-    """
+class MC2( SecondOrderReconstruction1D ):
+    def reconstruct( self, q, dx, h ):
+        """
         returns left and right cell face values for piecewise linear reconstruction with monotized central-difference limiter choice of slopes
-
-        reconstruction_radius = 2
 
         MC chooses slope to be minimum of twice each one-sided slope or the central difference slope, or zero if cell at minimum/maximum (when slopes of opposite sign)
         This choice of slopes tends to choose the central slope in smooth regions, which results in better resolution than the superbee choice, which tends to artificially steepen smooth regions
-    """
+        """
+        sigmaL = ( q[1:-1] - q[ :-2] ) / dx[1:  ]
+        sigmaR = ( q[2:  ] - q[1:-1] ) / dx[ :-1]
+        sigmaC = ( q[2:  ] - q[ :-2] ) / ( dx[1:] + dx[:-1] )
 
-    sigmaL = ( u[1:-1] - u[ :-2] ) / dx[1:  ]
-    sigmaR = ( u[2:  ] - u[1:-1] ) / dx[ :-1]
-    sigmaC = ( u[2:  ] - u[ :-2] ) / ( dx[1:] + dx[:-1] )
+        sigma = mth.minmod3( 2*sigmaL, 2*sigmaR, sigmaC )
 
-    sigma = mth.minmod3( 2*sigmaL, 2*sigmaR, sigmaC )
+        dq = 0.5*sigma*h[1:-1]
+        qR = q[ 2:-1 ] - dq[1:  ]
+        qL = q[ 1:-2 ] + dq[ :-1]
 
-    du = 0.5*sigma*h[1:-1]
-    uR = u[ 2:-1 ] - du[1:  ]
-    uL = u[ 1:-2 ] + du[ :-1]
-
-    return uL, uR
+        return qL, qR
 

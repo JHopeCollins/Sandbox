@@ -17,11 +17,6 @@ class Equation( object ):
         self.dq = None
         return
 
-    def set_variable( self, q ):
-        self.q  = q
-        self.mesh = q.mesh
-        return
-
     def set_time_integration( self, ODEintegrator ):
         self.time_stepper = ODEintegrator
         return
@@ -38,16 +33,7 @@ class Equation( object ):
 
         return np.diff( flux ) / q.mesh.dxh
 
-    def step(self, dt ):
-        self.calculate_update( dt )
-        self.apply_update()
+    def step(self, q, dt ):
+        dq = self.time_stepper( dt, q, self.spatial_operator )
+        q.update( dq )
         return
-
-    def calculate_update( self, dt ):
-        self.dq = self.time_stepper( dt, self.q, self.spatial_operator )
-        return
-
-    def apply_update( self ):
-        self.q.update( self.dq )
-        return
-
