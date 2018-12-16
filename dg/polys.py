@@ -9,6 +9,7 @@ import numpy as np
 import math
 from scipy.special import gamma
 
+
 def swap( a, b ):
     temp = a
     a = b
@@ -313,11 +314,11 @@ class Lagrange( object ):
         return self.y[j] * p0
 
     def yi( self, z ):
-        p = map( lambda j : self.ljx( j, z), range( self.order ) )
+        p = map( lambda j : self.ljx( j, z ), range( self.order ) )
         return sum( p )
 
     def dyi( self, z):
-        p = map( lambda j : self.dljx( j, z), range( self.order ) )
+        p = map( lambda j : self.dljx( j, z ), range( self.order ) )
         return sum( p )
 
 

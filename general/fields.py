@@ -17,6 +17,7 @@ class Domain( object ):
         self.xh  = xh.copy()
         self.xp  = xh.copy()
         self.dxh = np.diff( self.xh )
+        self.dxp = np.diff( self.xp )
         self.nh  = len( self.dxh )
         return
 
@@ -41,14 +42,14 @@ class BoundaryCondition( object ):
         """
         test if boundary conditions are equal (same type, location and value)
         """
-        if self is b: return True
+        if b is self: return True
         if self.name != b.name: return False
         if self.indx != b.indx: return False
         if self.val  != b.val:  return False
         return True
 
     def __ne__( self, b ):
-        return  not self == b
+        return not self == b
 
 
 class Field1D( object ):
@@ -215,7 +216,7 @@ class Field1D( object ):
         """
         test if two fields are equivalent (same mesh, value and boundary conditions)
         """
-        if self is b: return True
+        if b is self: return True
 
         if type(b) != type( self ): return False
 

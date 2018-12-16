@@ -4,6 +4,10 @@ look at how to combine:
    fv/dg timeseries_plotting
    fv/dg equation class
 
+time domain class
+
+general domain class with spatial domain and time domain inheriting??
+
 look at multiple inheritance
    eg for fv.fields.UnsteadyField1D inheriting from:
       fv.fields.Field1D
@@ -12,4 +16,14 @@ look at multiple inheritance
 move ODEintegrators and evolutions from fv to top folder ( maybe general )
 
 love Josh Maynard with all my heart
+    __  __     __  __     __  __
+   /  \/  \   /  \/  \   /  \/  \
+   \      /   \      /   \      /
+    \    /     \    /     \    /
+     \  /       \  /       \  /
+      \/         \/         \/
+
+
+unsteady boundary condition
+   eg for making time-dependent dirichlet condition for inlet flow
 
