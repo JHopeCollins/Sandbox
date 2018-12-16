@@ -22,10 +22,10 @@ class SecondOrderReconstruction1D( Reconstruction1D ):
         self.stencil_radius = 2
         return
 
-    def dirichlet( self, bc, q ):
+    def dirichlet_ghosts( self, bc, q ):
         pass
 
-    def neumann( self, bc, q ):
+    def neumann_ghosts( self, bc, q ):
         pass
 
 
@@ -43,14 +43,30 @@ class PCM1( Reconstruction1D ):
         qL = q[:-1]
         return qL, qR
 
-    def dirichlet( self, bc, q ):
+    def dirichlet_ghosts( self, bc, q ):
         qb = np.zeros( 2 )
 
-        inside  = bc.indx+1
+        inside  = bc.indx +1
         outside = bc.indx
 
-        qb[ inside ] = q[ bc.indx ]
+        qb[  inside ] = q[ bc.indx ]
         qb[ outside ] = bc.val
+        return qb
+
+    def neumann_ghosts( self, bc, q ):
+        qb = np.zeros( 2 )
+        n   = 2*bc.indx +1
+
+        inside  = bc.indx +1
+        outside = bc.indx
+
+        dx = q.mesh.dxp[ bc.indx ]
+        dn = bc.val
+
+        ghost = q[ bc.indx ] - n*dn*dx
+
+        qb[  inside ] = q[ bc.indx ]
+        qb[ outside ] = ghost
         return qb
 
 

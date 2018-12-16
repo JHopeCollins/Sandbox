@@ -45,11 +45,15 @@ class Flux1D( object ):
 
         flux[ bound:-bound ] = self.flux_calculation( args )
 
+        self.applyboundaries( q, flux )
+
+        return flux
+
+    def applyboundaries( self, q, flux ):
         for bc in q.bconds:
             bc_func = getattr( self, bc.name )
             bc_func( bc, q, flux )
-
-        return flux
+        return
 
     def periodic( self, bc, q, flux ):
         """

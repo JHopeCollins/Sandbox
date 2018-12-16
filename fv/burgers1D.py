@@ -29,7 +29,7 @@ nt = 1000
 L  = 2.*np.pi
 dx = L/(nx-1)
 nu = 0.17
-dt = 0.01
+dt = 0.001
 t  = 0
 
 x  = np.linspace(0, L, nx)
@@ -39,12 +39,16 @@ u.set_timestep( dt )
 u.set_save_interval( nt=5 )
 
 bcp  = sb.general.fields.BoundaryCondition( name='periodic' )
-bcn0 = sb.general.fields.BoundaryCondition( name='naive_adiabatic', indx= 0, val=0 )
-bcn1 = sb.general.fields.BoundaryCondition( name='naive_adiabatic', indx=-1, val=0 )
 
-u.add_boundary_condition( bcp  )
-# u.add_boundary_condition( bcn0 )
-# u.add_boundary_condition( bcn1 )
+# bcn0 = sb.general.fields.BoundaryCondition( name='naive_adiabatic', indx= 0, val=0 )
+bcn0 = sb.general.fields.BoundaryCondition( name='dirichlet', indx= 0, val= 5.0 )
+# bcn0 = sb.general.fields.BoundaryCondition( name='neumann',   indx= 0, val= 0.2 )
+
+bcn1 = sb.general.fields.BoundaryCondition( name='naive_outflow',   indx=-1, val=0 )
+
+# u.add_boundary_condition( bcp  )
+u.add_boundary_condition( bcn0 )
+u.add_boundary_condition( bcn1 )
 
 #set initial solution
 u_0 = np.asarray([ufunc(t, x0, nu) for x0 in x.xp])
@@ -55,27 +59,25 @@ print('cfl  =', max(u_0)*dt/dx)
 print('dif# =', nu*dt/(dx*dx))
 print('Pe   =', max(u_0)*dx/nu)
 
-fluxi = afs.CDS2()
-fluxi.set_advection_velocity( u )
-
-# fluxi = afc.REAFlux1D()
-# fluxi.set_reconstruction( rc.MC2 )
-# fluxi.set_reconstruction_radius( 2 )
-# fluxi.set_evolution( ev.upwind1 )
+# fluxi = afs.CDS2()
 # fluxi.set_advection_velocity( u )
+
+fluxi = afc.REAFlux1D()
+fluxi.set_reconstruction( rc.PCM1() )
+fluxi.set_evolution( ev.Upwind1() )
+fluxi.set_advection_velocity( u )
 
 fluxv = dfs.CDS2()
 fluxv.set_diffusion_coefficient( nu )
 
 bgrs = equationclass.Equation()
-bgrs.set_variable(  u     )
-# bgrs.add_flux_term( fluxi )
-bgrs.add_flux_term( fluxv )
+bgrs.add_flux_term( fluxi )
+#bgrs.add_flux_term( fluxv )
 bgrs.set_time_integration( ODEintegrators.RungeKutta4 )
 
 # timestepping
 for n in range( nt ):
-    bgrs.step( dt )
+    bgrs.step( u, dt )
 
 u.plot_history()
 

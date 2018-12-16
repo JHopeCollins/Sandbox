@@ -70,23 +70,128 @@ class REAFlux1D( AdvectiveFlux1D ):
         qL, qR = self.rec.reconstruct( q, dxp, dxh )
         vL, vR = self.rec.reconstruct( v, dxp, dxh )
 
-
-        flux = self.ev.evolve( qL,
-                               qR,
-                               vL,
-                               vR)
+        flux = self.ev.evolve( qL, qR, vL, vR )
 
         return flux
 
+    def dxp_ghosts( self, bc, q ):
+        dxp = np.zeros( 3*self.stencil_radius -2 )
+        n   = 2*bc.indx +1
+
+        centre = bc.indx + n*( self.stencil_radius -1 )
+
+        dxp[ centre ] = q.mesh.dxp[ bc.indx ]
+
+        # ghost cells
+        ixg = centre -n
+
+        for i in range( self.stencil_radius -1 ):
+            dxp[ ixg ] = q.mesh.dxp[ bc.indx ]
+            ixg -= n
+
+        # internal cells
+        ixi = centre +n
+        iqi = bc.indx
+
+        for i in range( 2*self.stencil_radius -2 ):
+            dxp[ ixi ] = q.mesh.dxp[ iqi ]
+            ixi += n
+            iqi += n
+
+        return dxp
+
+    def dxh_ghosts( self, bc, q ):
+        dxh = np.zeros( 3*self.stencil_radius -1 )
+        n   = 2*bc.indx +1
+
+        # ghost cells
+        ixg = bc.indx + n*( self.stencil_radius -1 )
+
+        for i in range( self.stencil_radius ):
+            dxh[ ixg ] = q.mesh.dxh[ bc.indx ]
+            ixg -= n
+
+        # internal cells
+        ixi = ixg + n
+        iqi = bc.indx
+
+        for i in range( 2*self.stencil_radius -1 ):
+            dxh[ ixi ] = q.mesh.dxh[ iqi ]
+            ixi += n
+            iqi += n
+
+        return dxh
+
     def dirichlet( self, bc, q, flux ):
-        # reconstruct qb
+        qb  = np.zeros( 3*self.stencil_radius -1 )
+        vb  = np.zeros( 3*self.stencil_radius -1 )
+        dxh = np.zeros( 3*self.stencil_radius -1 )
+        dxp = np.zeros( 3*self.stencil_radius -2 )
+        n   = 2*bc.indx +1
+
+        dxp[:] = self.dxp_ghosts( bc, q )
+        dxh[:] = self.dxh_ghosts( bc, q )
 
         # test what boundary condition is on self.vel
-        # reconstruct vb
+        for b in self.vel.bconds:
+            if b.indx == bc.indx:
+                vbc = b
+                break
+
+        velocityreconstruction = getattr( self.rec, vbc.name + '_ghosts' )
+
+        # ghost cells for q and v over the boundary
+        qb[:] = self.rec.dirichlet_ghosts( bc, q )
+        vb[:] = velocityreconstruction(   vbc, q ) 
+
+        # reconstruct q and v over the boundary
+        qL, qR = self.rec.reconstruct( qb, dxp, dxh )
+        vL, vR = self.rec.reconstruct( vb, dxp, dxh )
 
         #evolve over qb, vb
+        fb = self.ev.evolve( qL, qR, vL, vR )
 
         # update boundary fluxes
+        for i in range( self.stencil_radius ):
+            bi = bc.indx + i*n
+            flux[ bi ] = fb[ bi ]
+
+        return
+
+    def neumann( self, bc, q, flux ):
+        qb  = np.zeros( 3*self.stencil_radius -1 )
+        vb  = np.zeros( 3*self.stencil_radius -1 )
+        dxh = np.zeros( 3*self.stencil_radius -1 )
+        dxp = np.zeros( 3*self.stencil_radius -2 )
+        n   = 2*bc.indx +1
+
+        dxp[:] = self.dxp_ghosts( bc, q )
+        dxh[:] = self.dxh_ghosts( bc, q )
+
+        # test what boundary condition is on self.vel
+        for b in self.vel.bconds:
+            if b.indx == bc.indx:
+                vbc = b
+                break
+
+        velocityreconstruction = getattr( self.rec, vbc.name + '_ghosts' )
+
+        # ghost cells for q and v over the boundary
+        qb[:] = self.rec.neumann_ghosts( bc, q )
+        vb[:] = velocityreconstruction(   vbc, q ) 
+
+        # reconstruct q and v over the boundary
+        qL, qR = self.rec.reconstruct( qb, dxp, dxh )
+        vL, vR = self.rec.reconstruct( vb, dxp, dxh )
+
+        #evolve over qb, vb
+        fb = self.ev.evolve( qL, qR, vL, vR )
+
+        # update boundary fluxes
+        for i in range( self.stencil_radius ):
+            bi = bc.indx + i*n
+            flux[ bi ] = fb[ bi ]
+
         return
 
 
@@ -167,4 +272,3 @@ class REAPressureFlux1D(  PressureFlux1D ):
 
         return flux
        
-
