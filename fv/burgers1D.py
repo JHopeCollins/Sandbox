@@ -25,7 +25,7 @@ ufunc = mth.BurgersWave1D()
 
 #set up problem
 nx = 201
-nt = 1000
+nt = 200
 L  = 2.*np.pi
 dx = L/(nx-1)
 nu = 0.17
@@ -46,9 +46,9 @@ bcn0 = sb.general.fields.BoundaryCondition( name='dirichlet', indx= 0, val= 5.0 
 
 bcn1 = sb.general.fields.BoundaryCondition( name='naive_outflow',   indx=-1, val=0 )
 
-# u.add_boundary_condition( bcp  )
 u.add_boundary_condition( bcn0 )
 u.add_boundary_condition( bcn1 )
+# u.add_boundary_condition( bcp  )
 
 #set initial solution
 u_0 = np.asarray([ufunc(t, x0, nu) for x0 in x.xp])
@@ -63,7 +63,7 @@ print('Pe   =', max(u_0)*dx/nu)
 # fluxi.set_advection_velocity( u )
 
 fluxi = afc.REAFlux1D()
-fluxi.set_reconstruction( rc.PCM1() )
+fluxi.set_reconstruction( rc.minmod2() )
 fluxi.set_evolution( ev.Upwind1() )
 fluxi.set_advection_velocity( u )
 
@@ -72,7 +72,7 @@ fluxv.set_diffusion_coefficient( nu )
 
 bgrs = equationclass.Equation()
 bgrs.add_flux_term( fluxi )
-#bgrs.add_flux_term( fluxv )
+# bgrs.add_flux_term( fluxv )
 bgrs.set_time_integration( ODEintegrators.RungeKutta4 )
 
 # timestepping

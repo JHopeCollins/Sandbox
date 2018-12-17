@@ -33,6 +33,16 @@ class Upwind1( UpwindEvolution1D ):
         return flux
 
 
+class Central2( Evolution1D ):
+    def evolve( self, qL, qR, vL, vR ):
+        flux = np.zeros_like( qL )
+
+        flux[:]  = qL*vL + qR*vR
+        flux[:] *= 0.5
+
+        return flux
+
+
 def LaxFriedrichs1( qL, qR, vL, vR, dx, dt ):
     """
     returns face flux evaluated using Lax-Friedrichs method on the cell face discontinuity

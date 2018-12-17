@@ -23,10 +23,30 @@ class SecondOrderReconstruction1D( Reconstruction1D ):
         return
 
     def dirichlet_ghosts( self, bc, q ):
-        pass
+        qb = np.zeros( 2 )
+
+        inside  = bc.indx +1
+        outside = bc.indx
+
+        qb[  inside ] = q[ bc.indx ]
+        qb[ outside ] = 2.0*bc.val - q[ bc.indx ]
+        return qb
 
     def neumann_ghosts( self, bc, q ):
-        pass
+        qb = np.zeros( 2 )
+        n   = 2*bc.indx +1
+
+        inside  = bc.indx +1
+        outside = bc.indx
+
+        dx = q.mesh.dxp[ bc.indx ]
+        dn = bc.val
+
+        ghost = q[ bc.indx ] - n*dn*dx
+
+        qb[  inside ] = q[ bc.indx ]
+        qb[ outside ] = ghost
+        return qb
 
 
 class PCM1( Reconstruction1D ):
@@ -88,6 +108,34 @@ class minmod2( SecondOrderReconstruction1D ):
         qL = q[ 1:-2 ] + dq[ :-1]
 
         return qL, qR
+
+    def dirichlet_ghosts( self, bc, q ):
+        qb = np.zeros( 5 )
+        n   = 2*bc.indx +1
+
+        # internal cells
+        ixi = bc.indx + 2*n
+        iqi = bc.indx
+        for i in range( 3 ):
+            qb[ ixi ] = q[ iqi ]
+            ixi += n
+            iqi += n
+
+        # ghost cells
+        ghost0 = 3.0*q[ bc.indx   ] - 2.0*bc.val
+        sigmaR = n*( q[ bc.indx+n ] - q[ bc.indx ] )
+        sigmaL = n*( q[ bc.indx   ] - ghost0 )
+
+        if abs( sigmaR ) < abs( sigmaL ):
+            ghost0 = bc.val
+            ghost1 = bc.val
+        else:
+            ghost1 = 3.0*ghost0 - 2.0*bc.val
+
+        qb[ bc.indx   ] = ghost1
+        qb[ bc.indx+n ] = ghost0
+
+        return qb
 
 
 class superbee2( SecondOrderReconstruction1D ):

@@ -25,7 +25,34 @@ URGENT---------------------URGENT
 
 
 
+SHORT-TERM----------------SHORT-TERM
+
+diffusive flux boundary conditions
+   CDS2
+      dirichlet
+      neumann
+   CDS4
+      dirichlet
+      neumann
+
+finish boundary conditions for second order reconstructions
+   minmod2
+      neumann
+   superbee2
+      dirichlet
+      neumann
+   MC2
+      dirichlet
+      neumann
+
+SHORT-TERM----------------SHORT-TERM
+
+
+
 MEDIUM-TERM----------------MEDIUM-TERM
+
+SystemOfEquations subclasses
+   Euler Equations
 
 post-processing field
    make runtime field class bare minimum to run
@@ -44,9 +71,6 @@ SetOfEquations / SystemOfEquations classes
    system of equations describes a system of conservation laws, and evolves them together using a single flux function eg. Riemann solvers for gas dynamics evolve three conservation laws (in 1D), and requires data on all three variables to do this (ie messy to do using three separate equation instances).
       SystemOfEquations could possibly be an abstract class like Flux1D (ie only subclasses of this class are meant to be used), where subclasses are Euler, NavierStokes, Euler with passive scalar etc
 
-SystemOfEquations subclasses
-   Euler Equations
-
 REA advective fluxes
       evolution schemes - burgers equation
          godunov method for burgers equation
@@ -58,7 +82,7 @@ REA advective fluxes
 diffusive_fluxschemes.CDS4
    need to update to handle variable mesh spacing
 
-Lax-Friedrichs/Wendroff type fluxes with .set_dt() method and .dt attribute
+Lax-Friedrichs/Wendroff type evolutions with .set_dt() method and .dt attribute
 
 Flux limiter class type 1
    combines low order flux and high order flux
