@@ -138,7 +138,7 @@ class Field1D( object ):
 
     def __getitem__( self, index ):
         """
-        treating field like an array accesses the .val attribute
+        treat field like an array to access the .val attribute
         """
         return self.val[ index ]
         

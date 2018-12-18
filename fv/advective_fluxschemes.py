@@ -173,9 +173,11 @@ class UDS1( afc.UpwindFlux1D ):
         h   = args[2]
         u   = args[3]
 
-        direction = self.cell_face_direction( u )
-        indxs     = self.cell_indxs( u )
-        upwind    = self.upwind_indx( indxs, direction, 1 )
+        # direction = self.cell_face_direction( u )
+        # indxs     = self.cell_indxs( u )
+        # upwind    = self.upwind_indx( indxs, direction, 1 )
+        
+        upwind = self.get_upwind_index( u, 1 )
 
         flux = u[upwind]*var[upwind]
 
@@ -247,7 +249,7 @@ class QUICK3( afc.UpwindFlux1D ):
 
         upwind    = self.upwind_indx(   indxs, direction, 1 )
         upupwind  = self.upwind_indx(   indxs, direction, 2 )
-        downwind  = self.downwind_indx( indxs, direction, 2 )
+        downwind  = self.downwind_indx( indxs, direction, 1 )
 
         #                      |<----h---->|
         # cell     |     D     |     U     |     UU     |
@@ -331,4 +333,22 @@ class PressureUDS1( afc.PressureFlux1D ):
 
         return flux
 
+
+class VectorUDS1( afc.VectorUpwindFlux1D ):
+    def __init__( self ):
+        super( VectorUDS1, self ).__init__()
+        self.stencil_radius = 1
+        return
+
+    def flux_calculation( self, args ):
+        var = args[0]
+        dx  = args[1]
+        h   = args[2]
+        u   = args[3]
+
+        upwind = self.get_upwind_index( u, 1 )
+
+        flux = u[upwind]*var[:,upwind]
+
+        return flux
 

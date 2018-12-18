@@ -225,6 +225,18 @@ class UpwindFlux1D( AdvectiveFlux1D ):
     def downwind_indx( self, indxs, direction, n ):
         return indxs + n*direction - (direction-1)/2
 
+    def get_upwind_indx( self, u, n ):
+        direction = self.cell_face_direction( u )
+        indxs     = self.cell_indxs( u )
+        upwind    = self.upwind_indx( indxs, direction, n )
+        return upwind
+
+    def get_downwind_indx( self, u, n ):
+        direction = self.cell_face_direction( u )
+        indxs     = self.cell_indxs( u )
+        downwind  = self.downwind_indx( indxs, direction, n )
+        return downwind
+
 
 class PressureFlux1D( flc.Flux1D ):
     def set_pressure( self, p ):
@@ -271,4 +283,22 @@ class REAPressureFlux1D(  PressureFlux1D ):
                             vR)
 
         return flux
-       
+
+
+class VectorAdvectiveFlux1D( AdvectiveFlux1D ):
+    def naive_outflow( self, bc, q, flux ):
+        """
+        freeze the solution at the outflow boundary and convect out at constant velocity
+        """
+        r = self.stencil_radius
+        i = mth.step_into_array( bc.indx, r-1 )
+        c = self.vel[i]
+
+        for i in range( 0, self.stencil_radius ):
+            idx = mth.step_into_array( bc.indx, i )
+            flux[:, idx ] = c * q[:, idx ]
+        return
+
+
+class VectorUpwindFlux1D( VectorAdvectiveFlux1D, UpwindFlux1D ): pass
+

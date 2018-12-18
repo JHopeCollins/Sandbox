@@ -39,9 +39,9 @@ class Flux1D( object ):
         """
         flux = np.zeros( len( q.val ) + 1 )
 
-        args = self.arg_list( q )
-
         bound = self.stencil_radius
+
+        args = self.arg_list( q )
 
         flux[ bound:-bound ] = self.flux_calculation( args )
 
@@ -129,4 +129,47 @@ class Flux1D( object ):
         """
         var = args[0]
         return np.asarray( range( len( var ) +1 - 2*self.stencil_radius ) ) +1
+
+
+class VectorFlux1D( object ):
+    def __init__( self ):
+        self.stencil_radius = 1
+        return
+
+    def apply( self, q ):
+
+        shape  = q.val.shape * np.ones_like( q.val.shape ) 
+        shape += 1
+
+        bound = self.stencil_radius
+
+        args = self.arg_list( q )
+
+        flux[ :, bound:-bound ] = self.flux_calculation( args )
+
+        self.applyboundaries( q, flux )
+
+        return flux
+
+    def applyboundaries( self, q, flux ):
+        for bc in q.bconds:
+            bc_func = getattr( self, bc.name )
+            bc_func( bc, q, flux )
+        return
+
+    def naive_adiabatic( self, bc, q, flux ):
+        """
+        apply zero flux at boundary cells
+        """
+        for i in range( 0, self.stencil_radius ):
+            idx = mth.step_into_array( bc.indx, i )
+            flux[ :, idx ] = 0
+        return
+
+    def arg_list( self, q ):
+        args = []
+        args.append( q.val )
+        args.append( q.mesh.dxp )
+        args.append( q.mesh.dxh )
+        return args
 

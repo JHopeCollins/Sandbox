@@ -25,7 +25,7 @@ ufunc = mth.BurgersWave1D()
 
 #set up problem
 nx = 201
-nt = 200
+nt = 800
 L  = 2.*np.pi
 dx = L/(nx-1)
 nu = 0.17
@@ -48,7 +48,7 @@ bcn1 = sb.general.fields.BoundaryCondition( name='naive_outflow',   indx=-1, val
 
 u.add_boundary_condition( bcn0 )
 u.add_boundary_condition( bcn1 )
-# u.add_boundary_condition( bcp  )
+u.add_boundary_condition( bcp  )
 
 #set initial solution
 u_0 = np.asarray([ufunc(t, x0, nu) for x0 in x.xp])
@@ -59,20 +59,20 @@ print('cfl  =', max(u_0)*dt/dx)
 print('dif# =', nu*dt/(dx*dx))
 print('Pe   =', max(u_0)*dx/nu)
 
-# fluxi = afs.CDS2()
-# fluxi.set_advection_velocity( u )
-
-fluxi = afc.REAFlux1D()
-fluxi.set_reconstruction( rc.minmod2() )
-fluxi.set_evolution( ev.Upwind1() )
+fluxi = afs.QUICK3()
 fluxi.set_advection_velocity( u )
+
+# fluxi = afc.REAFlux1D()
+# fluxi.set_reconstruction( rc.minmod2() )
+# fluxi.set_evolution( ev.Upwind1() )
+# fluxi.set_advection_velocity( u )
 
 fluxv = dfs.CDS2()
 fluxv.set_diffusion_coefficient( nu )
 
 bgrs = equationclass.Equation()
 bgrs.add_flux_term( fluxi )
-# bgrs.add_flux_term( fluxv )
+bgrs.add_flux_term( fluxv )
 bgrs.set_time_integration( ODEintegrators.RungeKutta4 )
 
 # timestepping

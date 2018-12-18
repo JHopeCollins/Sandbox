@@ -106,7 +106,7 @@ class UnsteadyField1D( Field1D ):
 
 class VectorField1D( object ):
     def __init__( self, n, name, mesh ):
-        assert( len( name ) == n+1 )
+        assert len( name ) == n+1
         self.n     = n
         self.names = name
         self.name  = name[0]
@@ -121,40 +121,69 @@ class VectorField1D( object ):
 
         return
 
-    def set_field( self, data ):
-        self.val[:,:] = data[:,:]
+    def set_field( self, data, n=None ):
+        if n == None:
+            self.val[:,:] = data[:,:]
+        else:
+            self.val[n,:] = data[:]
         return
 
     def copy( self ):
         g = VectorField1D( self.n, self.names, self.mesh )
         for i in range( self.n ):
             g.q[i] = self.q[i].copy()
+            g.q[i].val = g.val[i,:]
 
         return g
-        
-    def add_boundary_condition( self, i, bc ):
-        if type(i) == type(1):
-            self.q[i].add_boundary_condition( bc )
-            return
 
-        elif type(i) == type('string'):
-            for qi in self.q:
-                if qi.name == i:
-                    qi.add_boundary_condition( bc )
-                    return
+    def update( self, dval, n=None ):
+        """
+        update the nodal values by the amount dval
+        """
+        if n == None:
+            self.val[:,:] += dval[:,:]
+        else:
+            self.val[n,:] += dval[:]
+        return
+ 
+    def add_boundary_condition( self, bc ):
+        """
+            Add an existing boundary condition to the field.
+
+            if location of input boundary condition already has a boundary condition, will replace with new one
+
+            input arguments:
+            bc: must be BoundaryCondition instance
+        """
+        identifier = 'boundary condition '+bc.name+' on field '+self.name
+
+        if bc.name == 'periodic':
+
+            del self.bconds[:]
 
         else:
-            print( 'invalid id for field of VectorField1D in add_boundary_condition' )
-            return
 
-    def update_ghosts( self ):
-        pass
+            if bc.indx == None:
+                print( 'bc index must be specified for non-periodic '+identifier )
+                return
+            if ( bc.indx != 0 ) and (bc.indx != -1 ):
+                print( 'bc index must be 0 or -1 for non-periodic '+identifier )
+                return
 
-    def periodic( self, bc ):
-        pass
+            for i, b in enumerate( self.bconds ):
+                if ( bc.indx == b.indx ) or ( b.name == 'periodic' ):
+                    del self.bconds[i]
+                    break
+
+        self.bconds.append( bc )
+
+        return
 
     def __getitem__( self, index ):
-        return self.q[index]
+        """
+        treat field like an array to access the individual variables
+        """
+        return self.q[ index ]
 
     def __add__( self, b ):
         assert self.mesh is b.mesh
@@ -212,17 +241,17 @@ class VectorField1D( object ):
     def __eq__( self, b ):
         if self is b: return True
 
-        if( type(b) != type( self ) ): return False
+        if type(b) != type( self ): return False
 
-        if( self.n != b.n ): return False
+        if self.n != b.n: return False
 
-        if( self.mesh is not b.mesh ): return False
+        if self.mesh is not b.mesh: return False
 
         for i in range( self.n ):
-            if( self[i] != b[i] ): return False
+            if self[i] != b[i]: return False
 
         return True
 
     def __ne__( self, b ):
-        return ( ( self == b ) == False )
+        return not ( self == b )
 
