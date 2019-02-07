@@ -137,9 +137,15 @@ class VectorFlux1D( object ):
         return
 
     def apply( self, q ):
+        """
+            Construct array of fluxes for all cell faces (excluding faces outside ghosts)
 
-        shape  = q.val.shape * np.ones_like( q.val.shape ) 
-        shape += 1
+            returns:
+            flux: array of fluxes at cell faces. len(flux) = len(var)+1
+        """
+        shape = q.val.shape * np.ones_like( q.val.shape ) 
+        shape[-1] += 1
+        flux = np.zeros( shape )
 
         bound = self.stencil_radius
 

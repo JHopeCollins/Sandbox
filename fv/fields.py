@@ -107,10 +107,11 @@ class UnsteadyField1D( Field1D ):
 class VectorField1D( object ):
     def __init__( self, n, name, mesh ):
         assert len( name ) == n+1
-        self.n     = n
-        self.names = name
-        self.name  = name[0]
-        self.mesh  = mesh
+        self.n      = n
+        self.names  = name
+        self.name   = name[0]
+        self.mesh   = mesh
+        self.bconds = []
 
         self.val = np.zeros( [ n, len( mesh.xp ) ] )
 
@@ -118,6 +119,7 @@ class VectorField1D( object ):
         for i in range( n ):
             self.q.append( Field1D( name[i+1], mesh ) )
             self.q[i].val = self.val[i,:]
+            setattr( self, name[i+1], self.q[i] )
 
         return
 
@@ -129,10 +131,13 @@ class VectorField1D( object ):
         return
 
     def copy( self ):
-        g = VectorField1D( self.n, self.names, self.mesh )
+        g = type(self)( self.n, self.names, self.mesh )
         for i in range( self.n ):
             g.q[i] = self.q[i].copy()
             g.q[i].val = g.val[i,:]
+
+        for bc in self.bconds:
+            g.add_boundary_condition( bc )
 
         return g
 

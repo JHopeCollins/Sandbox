@@ -209,7 +209,8 @@ class UpwindFlux1D( AdvectiveFlux1D ):
         r = self.stencil_radius
         if r==1:
             return np.sign( u[   :-r] + u[r:      ] ).astype( int )
-        return     np.sign( u[r-1:-r] + u[r:-(r-1)] ).astype( int )
+        else
+            return     np.sign( u[r-1:-r] + u[r:-(r-1)] ).astype( int )
 
     def cell_indxs( self, u ):
         """
@@ -285,7 +286,7 @@ class REAPressureFlux1D(  PressureFlux1D ):
         return flux
 
 
-class VectorAdvectiveFlux1D( AdvectiveFlux1D ):
+class VectorAdvectiveFlux1D( flc.VectorFlux1D, AdvectiveFlux1D ):
     def naive_outflow( self, bc, q, flux ):
         """
         freeze the solution at the outflow boundary and convect out at constant velocity
@@ -296,7 +297,20 @@ class VectorAdvectiveFlux1D( AdvectiveFlux1D ):
 
         for i in range( 0, self.stencil_radius ):
             idx = mth.step_into_array( bc.indx, i )
-            flux[:, idx ] = c * q[:, idx ]
+            flux[:, idx ] = c * q.val[:, idx ]
+        return
+
+    def naive_equal( self, bc, q, flux ):
+        """
+        maintain variable values at boundary
+        """
+        r = self.stencil_radius
+        i = mth.step_into_array( bc.indx, r )
+        f = flux[:,i]
+
+        for i in range( 0, self.stencil_radius ):
+            j = mth.step_into_array( bc.indx, i )
+            flux[:, j ] = f
         return
 
 
